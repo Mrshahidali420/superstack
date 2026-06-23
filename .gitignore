@@ -14,5 +14,8 @@ archive/
 # SuperStack runtime ledger (gitignored; override via SUPERSTACK_DIR)
 .superstack/
 
+# Subagent-driven-development process scratch (briefs, reports, diffs, progress)
+.superpowers/
+
 # Dependencies (if a project layers on top)
 node_modules/

@@ -1,13 +1,14 @@
 # Credits & Attribution
 
-SuperStack is an **original distillation**. It re-implements the *ideas* of the
-projects below in its own words and structure — it does **not** copy or
-redistribute their files. Each of these is excellent and worth installing on its
-own; SuperStack exists to merge their best ideas into one de-conflicted loop.
+SuperStack is **original work** — its own design, loop, and code, with capabilities these
+projects don't have (the Loop Ledger, `/ss-audit`, `/ss-report`, `/ss-evolve`). It was shaped
+by ideas from the open-source agent-workflow community, and it acknowledges the excellent
+MIT-licensed projects below as inspiration — it does **not** copy or redistribute their files.
+Each is excellent and worth using on its own.
 
 If you want any original in full, install it directly from its source.
 
-| Project | Author | License | What SuperStack borrows | Source |
+| Project | Author | License | Kindred ideas | Source |
 |---|---|---|---|---|
 | **Superpowers** | Jesse Vincent (obra) / Prime Radiant | MIT | Auto-triggering skills, spec-first brainstorming, true RED-GREEN-REFACTOR TDD, subagent-driven development, "skills are mandatory, not suggestions" | https://github.com/obra/superpowers |
 | **GSD Core** | TÂCHES / Open GSD | MIT | The phase loop, context-rot mitigation, fresh-context subagents, durable `STATE.md` / `CONTEXT.md` artifacts, parallel execution waves | https://github.com/open-gsd/gsd-core |

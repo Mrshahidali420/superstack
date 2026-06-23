@@ -5,7 +5,7 @@
     "url": "https://github.com/Mrshahidali420"
   },
   "metadata": {
-    "description": "SuperStack - the merged coding-agent workflow.",
+    "description": "SuperStack - an opinionated, verifiable loop for coding agents.",
     "version": "0.3.0"
   },
   "plugins": [

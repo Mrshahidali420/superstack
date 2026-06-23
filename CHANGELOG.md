@@ -6,6 +6,11 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Repositioned the README, `CLAUDE.md`, and the plugin/marketplace description around SuperStack
+  as its own framework — added why-it's-better, a capability comparison, use cases, and benefits;
+  reframed credits as inspiration rather than a "distillation."
+
 ## [0.3.0] - 2026-06-24
 
 ### Added

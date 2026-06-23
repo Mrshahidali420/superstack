@@ -10,9 +10,9 @@ SuperStack turns a coding agent into a disciplined engineering team that runs
 FRAME → PLAN → BUILD → REVIEW → QA → SECURE → SHIP → LEARN
 ```
 
-It distills four projects — **Superpowers, GSD, gstack, Ralph** — and adds
-**Andrej Karpathy's** anti-mistake guidelines as always-on guardrails. See
-`CREDITS.md`. These instructions override default behavior; the human's explicit
+It runs **Andrej Karpathy's** anti-mistake guidelines as always-on guardrails, and
+draws on ideas from the open-source agent-workflow community (acknowledged in
+`CREDITS.md`). These instructions override default behavior; the human's explicit
 instructions always win over this file.
 
 ---

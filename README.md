@@ -2,58 +2,95 @@
 
 # SuperStack
 
-**One disciplined loop for your coding agent.**
+**An operating system for coding agents — one disciplined, *verifiable* loop.**
 
-Frame → Plan → Build → Review → QA → Secure → Ship → Learn.
+Frame → Plan → Build → Review → QA → Secure → Ship → Learn
 
-A distillation of [Superpowers](https://github.com/obra/superpowers), [GSD](https://github.com/open-gsd/gsd-core), [gstack](https://github.com/garrytan/gstack), and [Ralph](https://github.com/snarktank/ralph) — with [Karpathy's](https://github.com/forrestchang/andrej-karpathy-skills) anti-mistake laws baked in.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) ![status v0.3.0](https://img.shields.io/badge/release-v0.3.0-brightgreen.svg) ![skills 22](https://img.shields.io/badge/skills-22-7c3aed.svg)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) ![status v0.1](https://img.shields.io/badge/status-v0.1-orange.svg)
-
-Built for Claude Code today; portable to other skill-aware agents.
+Built for Claude Code; portable to any skill-aware agent.
 
 </div>
 
 ---
 
-## Why this exists
+## What is SuperStack?
 
-There are four great workflow frameworks for coding agents, and they overlap and
-collide. Run more than one and you get duplicate `/review`, `/learn`, and `/ship`
-commands, two planning flows fighting in your context, and token bloat from a dozen
-auto-triggering skills.
+Coding agents are powerful but undisciplined. Left alone they skip review, invent a plan halfway through, lose the thread across sessions, and announce **"done"** with nothing to back it up.
 
-SuperStack is the opinionated merge: **one loop**, taking the single best idea from
-each, namespaced `/ss-*` so it never collides with what you already have.
+SuperStack is an opinionated framework that turns your agent into a disciplined engineering team. It runs **one mandatory, gated loop** on every non-trivial task, **records what it actually did**, and can **prove the loop ran** before anything ships.
 
-| From | SuperStack takes |
-|------|------------------|
-| **Superpowers** | Spec-first discipline, true RED-GREEN-REFACTOR TDD, mandatory (not optional) skills |
-| **GSD** | The phase loop, context-rot mitigation, durable `STATE.md` / `CONTEXT.md` |
-| **gstack** | Review / QA / security / ship gates that act like a real eng team |
-| **Ralph** | An autonomous loop for unattended, spec-driven runs |
-| **Karpathy** | Four laws that stop the most common LLM coding mistakes |
+It is its own framework — its own loop, its own gates, its own proof-of-process ledger and self-evolution, its own code. It's informed by years of great open-source thinking on agent workflows (see [Credits](#credits--inspiration)), but everything in the `/ss-*` toolkit is SuperStack's own design.
 
-This repo **re-implements the ideas in its own words** — it does not vendor or copy
-upstream files. Each original is worth installing on its own; see [`CREDITS.md`](CREDITS.md).
+---
+
+## Why SuperStack
+
+- **One gated loop, not a grab-bag of commands.** Eight phases, each with a **gate** it must clear before the next begins. The skills are mandatory workflows, not polite suggestions — so quality isn't left to whether the agent "felt like" reviewing.
+- **Proof of process.** Most agent setups can't tell you whether the agent *actually* followed the process. SuperStack records every gate to a **Loop Ledger**, `/ss-audit` verifies the mandatory phases ran, and `/ss-ship` attaches a `Framed ✓ Planned ✓ Built ✓ Reviewed ✓ Secured ✓` attestation to the PR. Trust, but verify.
+- **It improves itself.** `/ss-evolve` mines *your own* usage — recurring skips, gates that keep failing — and auto-applies low-risk fixes (revertable commits) or drafts new skills for your review. The framework gets sharper the more you use it.
+- **Always-on guardrails.** Karpathy's four anti-mistake laws run on *every* task: think before coding, simplicity first, surgical changes, goal-driven execution.
+- **Context-rot resistant.** Fresh-context subagents plus durable `STATE.md` / `CONTEXT.md` keep output quality high on long, multi-session work — a cold session can pick up exactly where you left off.
+- **Autonomy when you want it.** `/ss-ralph` runs the entire loop unattended against a PRD until it's done.
+- **Plays nice with everything.** Every command is namespaced `/ss-*` and works across Claude Code, Codex, Cursor, OpenCode, Factory, and Kiro — it coexists with whatever you already run, no collisions.
+
+---
+
+## How it compares
+
+The real alternatives to SuperStack are *ad-hoc prompting*, a *single one-shot workflow command*, or *stacking several overlapping frameworks* and hoping they don't fight. Here's the difference:
+
+| Capability | Raw prompting | A single workflow command | **SuperStack** |
+|---|:---:|:---:|:---:|
+| Enforced multi-phase process | ✗ | partial | ✅ one gated loop |
+| **Verifiable proof the process ran** | ✗ | ✗ | ✅ ledger + `/ss-audit` |
+| **Self-improves from your usage** | ✗ | ✗ | ✅ `/ss-evolve` |
+| Durable cross-session memory | ✗ | varies | ✅ `STATE.md` / `CONTEXT.md` |
+| Unattended autonomous runs | ✗ | varies | ✅ `/ss-ralph` |
+| Always-on mistake guardrails | ✗ | ✗ | ✅ Karpathy's 4 laws |
+| Cross-agent & collision-free | n/a | varies | ✅ `/ss-*`, 6 agents |
+| Shareable "how it was built" report | ✗ | ✗ | ✅ `/ss-report` |
+
+SuperStack's bet: a *coherent, verifiable* process beats a pile of clever-but-unaccountable commands.
+
+---
+
+## Use cases
+
+- **Ship a feature you can trust** — the full loop: spec → TDD → review → QA → security, with the proof attached to the PR.
+- **Fix a bug the right way** — start at QA: reproduce → fix → add a regression test, so it can't silently come back.
+- **Refactor without fear** — Plan → Build with the test suite green before *and* after.
+- **Long or multi-session work** — context engineering + the ledger keep a brand-new session resumable and on-track.
+- **Unattended grind** — point `/ss-ralph` at a PRD and let it work through the backlog with real feedback loops (typecheck, tests, CI).
+- **Process you can audit** — every change carries a verifiable record of *how* it was built, not just *what* changed.
+
+---
+
+## Benefits
+
+- **Fewer "looked done, actually broke" moments** — gates and evidence replace optimistic claims.
+- **Less context rot** on big tasks — the heavy lifting happens in fresh subagent contexts.
+- **A process that tightens itself** over time, from your real usage.
+- **No lock-in** — MIT licensed, cross-agent, namespaced. Adopt it incrementally; fork it freely.
 
 ---
 
 ## The loop
 
 ```
-        ┌───────────────────────  context engineering  ───────────────────────┐
-        │      fresh-context subagents  ·  STATE.md  ·  CONTEXT.md             │
-        └─────────────────────────────────────────────────────────────────────┘
+        ┌─────────────────────  context engineering  ─────────────────────┐
+        │     fresh-context subagents  ·  STATE.md  ·  CONTEXT.md          │
+        └─────────────────────────────────────────────────────────────────┘
 
    FRAME ──▶ PLAN ──▶ BUILD ──▶ REVIEW ──▶ QA ──▶ SECURE ──▶ SHIP ──▶ LEARN
     spec     tasks     TDD       bugs      app    OWASP       PR       memory
                          ▲                                      │
                          └──────────  /ss-ralph (autonomous) ───┘
+
+   every phase records its gate to the Loop Ledger → /ss-audit verifies it before /ss-ship
 ```
 
-Each phase has a **gate** it must clear before the next begins. You can re-enter
-anywhere: a bug report starts at QA, a refactor at Plan, "what should we build?" at Frame.
+Each phase has a **gate** it must clear before the next begins. Re-enter anywhere: a bug report starts at **QA**, a refactor at **Plan**, "what should we build?" at **Frame**. Trivial one-liners skip the ceremony — the loop scales to the work.
 
 ---
 
@@ -78,14 +115,13 @@ git clone https://github.com/Mrshahidali420/superstack ~/.superstack && ~/.super
 git clone https://github.com/Mrshahidali420/superstack "$HOME\.superstack"; & "$HOME\.superstack\install.ps1"
 ```
 
-The installer targets Claude Code by default, copying the `/ss-*` skills and agents into
-`~/.claude/`. Pass `--host codex|cursor|opencode|factory|kiro` (or `-Agent` on Windows), or
-`--all`, to install for other agents. Then merge `CLAUDE.md` into your global or project config
-to adopt the loop.
+Installs the `/ss-*` skills and agents into `~/.claude/` by default. Pass `--host codex|cursor|opencode|factory|kiro` (or `-Agent` on Windows), or `--all`, to target other agents. Then merge `CLAUDE.md` into your global or project config to adopt the loop.
 
 ---
 
 ## Commands
+
+**The loop**
 
 | Command | Phase | Does |
 |---------|-------|------|
@@ -95,11 +131,31 @@ to adopt the loop.
 | `/ss-review` | Review | Staff-eng review, severity-graded, auto-fix the trivial |
 | `/ss-qa` | QA | Run the app, find and fix bugs, add regression tests |
 | `/ss-secure` | Secure | OWASP + STRIDE pass + secret scan |
-| `/ss-ship` | Ship | Coverage gate, conventional commit, PR, optional deploy |
-| `/ss-ralph` | Autonomy | Run the loop unattended until a PRD is fully done |
+| `/ss-ship` | Ship | Coverage gate, conventional commit, PR, attestation, optional deploy |
 | `/ss-learn` | Learn | Persist learnings so the next session starts smart |
 
-**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` — run `/ss-help` for the full index.
+**Proof, autonomy & insight**
+
+| Command | Does |
+|---------|------|
+| `/ss-audit` | Verify the mandatory phases actually ran (reads the Loop Ledger) |
+| `/ss-report` | Generate a shareable Markdown summary of how a change was built |
+| `/ss-evolve` | Learn from your ledger; auto-apply low-risk fixes, draft new skills for review |
+| `/ss-ralph` | Run the loop unattended until a PRD is fully done |
+
+**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` — run `/ss-help` for the full index (**22 skills, 4 review agents, 2 hooks**).
+
+---
+
+## Under the hood
+
+- **Loop Ledger + `/ss-audit`** — every phase records its gate to `.superstack/ledger.jsonl`; the audit checks the mandatory phases (default `review,secure`) each passed or carry an explicit skip-with-reason. An **opt-in** `PreToolUse` hook (`SUPERSTACK_AUDIT=1`) can block a push when the loop is incomplete. See [`docs/ledger.md`](docs/ledger.md).
+- **`/ss-report`** — turns the ledger + git into a copy-pasteable run summary (phases, timing, change size) for a PR or status update. Read-only.
+- **`/ss-evolve`** — detects recurring patterns in the ledger and auto-applies low-risk `CONTEXT.md` insights as revertable `chore(evolve):` commits, routing brand-new skill drafts to `.superstack/proposals/` for your review (never auto-committed).
+- **Hooks** — a **SessionStart** hook activates the loop from the first message (and after `/clear` / compaction); an **opt-in guard** (`SUPERSTACK_GUARD=1`, `SUPERSTACK_FREEZE_DIR=<dir>`) blocks destructive commands / edits outside a directory. Stack-specific format/lint/test hooks are intentionally not bundled — see [`docs/hooks.md`](docs/hooks.md).
+- **Autonomy** — `/ss-ralph` converts a spec to a `prd.json` and runs a fresh agent per iteration, with `--dry-run`, per-iteration logs, and archive-on-completion.
+
+Everything ships **bash + PowerShell** twins and is covered by a self-test (`tests/run.sh`) and CI.
 
 ---
 
@@ -126,29 +182,21 @@ You:        Build me a URL-shortener API.
 /ss-qa      → hits the running API, catches a 500 on duplicate slug,
               fixes it, adds a regression test
 /ss-secure  → confirms input validation, no secrets in the diff
-/ss-ship    → conventional commit, PR opened, CI green
+/ss-ship    → conventional commit, PR opened with a process attestation, CI green
+/ss-report  → "built in 22m · 4 phases · 12 tests added · 2 bugs caught at review"
 ```
 
-## Hooks
+---
 
-SuperStack ships a **SessionStart** hook that activates the loop from the first message (and
-after `/clear` or compaction), plus an **opt-in guard** (`PreToolUse`, off by default):
+## Focused, not bloated
 
-- `SUPERSTACK_GUARD=1` — block destructive shell commands (`rm -rf`, force-push, `DROP`…).
-- `SUPERSTACK_FREEZE_DIR=<dir>` — block edits outside that directory.
+SuperStack is deliberately lean. It does not bundle a headless-browser server, a full standalone CLI, or an eval harness. Where you need that depth, the `/ss-*` namespace is chosen so you can run a specialized tool **alongside** SuperStack without collision — use the right tool for the job, keep the loop as your spine.
 
-Stack-specific hooks (format/lint/test on save) are intentionally **not** bundled — see
-[`docs/hooks.md`](docs/hooks.md) for snippets to add to your own `settings.json`.
+---
 
-## Loop Ledger
+## Credits & inspiration
 
-SuperStack records each phase's gate outcome to `.superstack/ledger.jsonl`; `/ss-audit` verifies the loop ran before you ship, and `/ss-ship` attaches a proof-of-process attestation to the PR. See [`docs/ledger.md`](docs/ledger.md).
-
-## What SuperStack is *not*
-
-It does not re-implement gstack's Playwright browse server or its prompt-injection
-classifier, GSD's full CLI, or Superpowers' eval harness. Where you need that depth,
-run the original alongside — the `/ss-*` namespace is chosen so they coexist.
+SuperStack is original work, but it stands on the shoulders of excellent MIT-licensed projects that shaped how the community thinks about agent workflows — and on Andrej Karpathy's notes on LLM coding pitfalls. See [`CREDITS.md`](CREDITS.md) for the full acknowledgment. If any of them fit your needs better, use them — and if you want a verifiable, self-improving loop as your backbone, that's what SuperStack is here for.
 
 ---
 

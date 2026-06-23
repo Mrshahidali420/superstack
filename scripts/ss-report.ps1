@@ -8,7 +8,6 @@ $dir = if ($env:SUPERSTACK_DIR) { $env:SUPERSTACK_DIR } else { '.superstack' }
 if ($dir -match '^/[a-zA-Z]/') {
   try { $dir = (& cygpath -w $dir 2>$null).Trim() } catch {}
 }
-$env:SUPERSTACK_DIR = $dir
 $ledger = Join-Path $dir 'ledger.jsonl'
 if (-not $Change) { $Change = "$(git branch --show-current 2>$null)".Trim() }
 if (-not $Change) { $Change = 'default' }
@@ -41,11 +40,13 @@ if ($first -and $last -and $first -ne $last) {
 $att = ''
 $audit = Join-Path $PSScriptRoot 'ss-audit.ps1'
 if (Test-Path $audit) {
+  $prev = $env:SUPERSTACK_DIR
   try {
+    $env:SUPERSTACK_DIR = $dir   # scope the resolved path to the child call only
     $raw = (& $audit -Attest) 2>$null
     if ($raw -is [array]) { $raw = $raw -join "`n" }
     if ("$raw".StartsWith('SuperStack process:')) { $att = "$raw".Trim() }
-  } catch {}
+  } catch {} finally { $env:SUPERSTACK_DIR = $prev }
 }
 
 $gitLine = ''

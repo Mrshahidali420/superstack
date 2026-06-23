@@ -6,11 +6,13 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-23
+
 ### Added
 - **Loop Ledger:** `.superstack/ledger.jsonl` + `ledger` helper, `ss-audit` proof-of-process gate
   with PR attestation, and an opt-in enforcement hook (`SUPERSTACK_AUDIT=1`).
 - Eight supporting skills: `/ss-debug`, `/ss-guard`, `/ss-respond`, `/ss-worktree`,
-  `/ss-pause`, `/ss-resume`, `/ss-retro`, `/ss-docs` (19 skills total).
+  `/ss-pause`, `/ss-resume`, `/ss-retro`, `/ss-docs`, plus `/ss-audit` (20 skills total).
 - Cross-agent install: `install.sh --host <agent>|--all` and `install.ps1 -Agent|-All`
   for Codex, Cursor, OpenCode, Factory, and Kiro (Claude Code remains the default).
 - Ralph loop: `--dry-run` preview, per-iteration run logs (`runs/`), and archive-on-completion (`archive/`).
@@ -36,5 +38,6 @@ All notable changes to SuperStack are documented here. The format follows
 - Cross-platform installers and Claude Code plugin + marketplace manifests.
 - Skill-frontmatter linter (`scripts/lint-skills.sh`), self-test, and CI.
 
-[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Mrshahidali420/superstack/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Mrshahidali420/superstack/releases/tag/v0.1.0

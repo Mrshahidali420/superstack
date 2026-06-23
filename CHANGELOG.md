@@ -7,6 +7,8 @@ All notable changes to SuperStack are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- **Loop Ledger:** `.superstack/ledger.jsonl` + `ledger` helper, `ss-audit` proof-of-process gate
+  with PR attestation, and an opt-in enforcement hook (`SUPERSTACK_AUDIT=1`).
 - Eight supporting skills: `/ss-debug`, `/ss-guard`, `/ss-respond`, `/ss-worktree`,
   `/ss-pause`, `/ss-resume`, `/ss-retro`, `/ss-docs` (19 skills total).
 - Cross-agent install: `install.sh --host <agent>|--all` and `install.ps1 -Agent|-All`

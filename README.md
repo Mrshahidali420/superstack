@@ -140,6 +140,10 @@ after `/clear` or compaction), plus an **opt-in guard** (`PreToolUse`, off by de
 Stack-specific hooks (format/lint/test on save) are intentionally **not** bundled — see
 [`docs/hooks.md`](docs/hooks.md) for snippets to add to your own `settings.json`.
 
+## Loop Ledger
+
+SuperStack records each phase's gate outcome to `.superstack/ledger.jsonl`; `/ss-audit` verifies the loop ran before you ship, and `/ss-ship` attaches a proof-of-process attestation to the PR. See [`docs/ledger.md`](docs/ledger.md).
+
 ## What SuperStack is *not*
 
 It does not re-implement gstack's Playwright browse server or its prompt-injection

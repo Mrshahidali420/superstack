@@ -11,5 +11,8 @@ progress.md
 runs/
 archive/
 
+# SuperStack runtime ledger (gitignored; override via SUPERSTACK_DIR)
+.superstack/
+
 # Dependencies (if a project layers on top)
 node_modules/

@@ -10,9 +10,10 @@ input="$(cat)"
 cmd="$(printf '%s' "$input" | jq -r '.tool_input.command // empty')"
 printf '%s' "$cmd" | grep -Eq 'git[[:space:]]+push|gh[[:space:]]+pr[[:space:]]+create' || exit 0
 dir="$(cd "$(dirname "$0")" && pwd)"
-if ! bash "$dir/../scripts/ss-audit" >/dev/null 2>&1; then
-  reason="$(bash "$dir/../scripts/ss-audit" 2>&1 | grep -i missing || echo 'process incomplete')"
-  echo "/ss-audit blocked the push: $reason. Complete the loop or record a skip, or unset SUPERSTACK_AUDIT." >&2
-  exit 2
-fi
-exit 0
+audit="$dir/../scripts/ss-audit"
+[ -f "$audit" ] || exit 0
+out="$(bash "$audit" 2>&1)"; rc=$?
+[ "$rc" -eq 0 ] && exit 0
+reason="$(printf '%s' "$out" | grep -i missing || echo 'process incomplete')"
+echo "ss-audit blocked the push: $reason Complete the loop or record a skip, or unset SUPERSTACK_AUDIT." >&2
+exit 2

@@ -25,8 +25,10 @@ No destructive command runs without confirmation; no edit lands outside the froz
 
 ## Note
 
-This is an agent-followed discipline. For hard enforcement, pair it with a `PreToolUse` hook that
-blocks the same commands/paths — the skill and the hook reinforce each other.
+This is an agent-followed discipline, and SuperStack also ships a matching **enforcement hook**
+(off by default): set `SUPERSTACK_GUARD=1` to hard-block destructive commands, and
+`SUPERSTACK_FREEZE_DIR=<path>` to hard-block edits outside that directory. The skill and the hook
+reinforce each other. See `docs/hooks.md`.
 
 ## Lineage
 

@@ -74,7 +74,7 @@ done
 
 # JSON manifests
 if command -v jq >/dev/null 2>&1; then
-  for j in "$ROOT"/.claude-plugin/plugin.json "$ROOT"/.claude-plugin/marketplace.json "$ROOT"/ralph/prd.example.json; do
+  for j in "$ROOT"/.claude-plugin/plugin.json "$ROOT"/.claude-plugin/marketplace.json "$ROOT"/ralph/prd.example.json "$ROOT"/hooks/hooks.json; do
     [ -e "$j" ] || continue
     jq empty "$j" 2>/dev/null || err "${j#"$ROOT"/}: invalid JSON"
   done

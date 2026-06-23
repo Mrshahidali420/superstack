@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# SuperStack guard PreToolUse hook (opt-in, OFF by default).
+#   careful: set SUPERSTACK_GUARD=1        -> block destructive shell commands.
+#   freeze:  set SUPERSTACK_FREEZE_DIR=DIR -> block edits to files outside DIR.
+# Reads the PreToolUse JSON on stdin. Exit 2 blocks the tool call and shows the reason.
+set -uo pipefail
+
+# Inert unless explicitly enabled — zero effect for users who never opt in.
+[ "${SUPERSTACK_GUARD:-0}" = "1" ] || [ -n "${SUPERSTACK_FREEZE_DIR:-}" ] || exit 0
+
+command -v jq >/dev/null 2>&1 || exit 0   # can't parse without jq -> fail open
+input="$(cat)"
+tool="$(printf '%s' "$input" | jq -r '.tool_name // empty')"
+
+# careful: refuse obviously destructive shell commands.
+if [ "${SUPERSTACK_GUARD:-0}" = "1" ] && [ "$tool" = "Bash" ]; then
+  cmd="$(printf '%s' "$input" | jq -r '.tool_input.command // empty')"
+  if printf '%s' "$cmd" | grep -Eiq 'rm[[:space:]]+-[a-z]*[rf]|git[[:space:]]+push[[:space:]].*(--force|-f)|git[[:space:]]+reset[[:space:]]+--hard|(drop|truncate)[[:space:]]+(table|database)|mkfs|dd[[:space:]]+if='; then
+    echo "/ss-guard (careful): blocked a potentially destructive command. Review it and run it manually if intended, or unset SUPERSTACK_GUARD." >&2
+    exit 2
+  fi
+fi
+
+# freeze: refuse edits to files outside the frozen directory.
+if [ -n "${SUPERSTACK_FREEZE_DIR:-}" ] && { [ "$tool" = "Write" ] || [ "$tool" = "Edit" ] || [ "$tool" = "MultiEdit" ]; }; then
+  path="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')"
+  case "$path" in
+    ""|"$SUPERSTACK_FREEZE_DIR"*) : ;;
+    *) echo "/ss-guard (freeze): edits are frozen to $SUPERSTACK_FREEZE_DIR; '$path' is outside it." >&2; exit 2 ;;
+  esac
+fi
+
+exit 0

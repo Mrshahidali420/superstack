@@ -1,0 +1,25 @@
+{
+  "name": "superstack",
+  "version": "0.1.0",
+  "description": "One disciplined loop for coding agents: Frame -> Plan -> Build (TDD) -> Review -> QA -> Secure -> Ship -> Learn, with an optional autonomous Ralph driver. Distills Superpowers, GSD, gstack, and Ralph, with Karpathy's anti-mistake guidelines baked in.",
+  "author": {
+    "name": "Mrshahidali420",
+    "url": "https://github.com/Mrshahidali420"
+  },
+  "homepage": "https://github.com/Mrshahidali420/superstack",
+  "repository": "https://github.com/Mrshahidali420/superstack",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "skills",
+    "agentic",
+    "tdd",
+    "workflow",
+    "code-review",
+    "superpowers",
+    "gstack",
+    "gsd",
+    "ralph",
+    "karpathy"
+  ]
+}

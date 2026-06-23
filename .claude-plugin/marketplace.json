@@ -1,0 +1,18 @@
+{
+  "name": "superstack",
+  "owner": {
+    "name": "Mrshahidali420",
+    "url": "https://github.com/Mrshahidali420"
+  },
+  "metadata": {
+    "description": "SuperStack - the merged coding-agent workflow.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "superstack",
+      "source": "./",
+      "description": "Frame -> Plan -> Build (TDD) -> Review -> QA -> Secure -> Ship -> Learn. One de-conflicted loop, cross-agent, with an autonomous Ralph driver."
+    }
+  ]
+}

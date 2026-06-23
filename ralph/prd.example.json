@@ -1,0 +1,39 @@
+{
+  "branchName": "feature/uptime-monitor",
+  "description": "A minimal uptime monitor: register URLs, poll them, alert on failure.",
+  "stories": [
+    {
+      "id": 1,
+      "title": "Add a 'monitors' table with a migration",
+      "priority": 1,
+      "acceptance": [
+        "Migration creates monitors(id, url, interval_seconds, created_at)",
+        "Migration runs clean on an empty database",
+        "A test inserts and reads back a monitor row"
+      ],
+      "passes": false
+    },
+    {
+      "id": 2,
+      "title": "Add POST /monitors to register a URL",
+      "priority": 2,
+      "acceptance": [
+        "Validates the URL and interval before inserting",
+        "Returns 201 with the created monitor",
+        "Tests cover a valid create and a rejected invalid URL"
+      ],
+      "passes": false
+    },
+    {
+      "id": 3,
+      "title": "Poll registered monitors and record status",
+      "priority": 3,
+      "acceptance": [
+        "A worker fetches each monitor on its interval",
+        "Records up/down and response time per check",
+        "Test simulates an up host and a down host"
+      ],
+      "passes": false
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Ralph runtime artifacts (these belong in the consuming project, not here)
+prd.json
+progress.md
+
+# Dependencies (if a project layers on top)
+node_modules/

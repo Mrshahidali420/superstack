@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # SuperStack — Ralph autonomous loop.
 # Spawns a fresh agent per iteration until every prd.json story passes,
 # or until max iterations is reached. Memory lives in git + prd.json + progress.md.

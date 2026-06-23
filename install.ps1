@@ -1,4 +1,5 @@
 #!/usr/bin/env pwsh
+# SPDX-License-Identifier: MIT
 # SuperStack installer (Windows / PowerShell).
 # Copies the /ss-* skills and agents into ~/.claude and points you at CLAUDE.md.
 $ErrorActionPreference = 'Stop'

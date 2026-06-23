@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # SuperStack installer (macOS / Linux / Git Bash).
 # Copies the /ss-* skills and agents into ~/.claude and points you at CLAUDE.md.
 set -euo pipefail

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Lint SuperStack skills, agents, and JSON manifests.
 # Every skill/agent must have frontmatter with a name (skills: starting "ss-") and a
 # description. JSON manifests must parse. Exits non-zero on any problem.

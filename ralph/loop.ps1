@@ -1,4 +1,5 @@
 #!/usr/bin/env pwsh
+# SPDX-License-Identifier: MIT
 # SuperStack - Ralph autonomous loop (Windows / PowerShell).
 # Spawns a fresh agent per iteration until every prd.json story passes, or max iterations.
 # Memory lives in git + prd.json + progress.md.

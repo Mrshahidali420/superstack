@@ -8,6 +8,8 @@ Thumbs.db
 # Ralph runtime artifacts (these belong in the consuming project, not here)
 prd.json
 progress.md
+runs/
+archive/
 
 # Dependencies (if a project layers on top)
 node_modules/

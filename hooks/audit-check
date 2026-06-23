@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Opt-in proof-of-process gate. Inert unless SUPERSTACK_AUDIT=1.
+# Blocks `git push` / `gh pr create` when the loop ledger is incomplete.
+set -uo pipefail
+[ "${SUPERSTACK_AUDIT:-0}" = "1" ] || exit 0
+command -v jq >/dev/null 2>&1 || exit 0
+input="$(cat)"
+[ "$(printf '%s' "$input" | jq -r '.tool_name // empty')" = "Bash" ] || exit 0
+cmd="$(printf '%s' "$input" | jq -r '.tool_input.command // empty')"
+printf '%s' "$cmd" | grep -Eq 'git[[:space:]]+push|gh[[:space:]]+pr[[:space:]]+create' || exit 0
+dir="$(cd "$(dirname "$0")" && pwd)"
+if ! bash "$dir/../scripts/ss-audit" >/dev/null 2>&1; then
+  reason="$(bash "$dir/../scripts/ss-audit" 2>&1 | grep -i missing || echo 'process incomplete')"
+  echo "/ss-audit blocked the push: $reason. Complete the loop or record a skip, or unset SUPERSTACK_AUDIT." >&2
+  exit 2
+fi
+exit 0

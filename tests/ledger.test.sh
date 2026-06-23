@@ -28,6 +28,9 @@ chk "audit complete via skip" 'bash "$ROOT/scripts/ss-audit" br2 >/dev/null 2>&1
 # attestation line contains a tick
 chk "audit attest" 'bash "$ROOT/scripts/ss-audit" --attest | grep -q "SuperStack process:"'
 
+# audit-check inert when SUPERSTACK_AUDIT unset
+chk "hook inert" 'printf "%s" "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git push\"}}" | bash "$ROOT/hooks/audit-check"'
+
 echo
 [ "$fail" -eq 0 ] && echo "LEDGER TESTS PASS" || echo "LEDGER TESTS FAILED"
 exit "$fail"

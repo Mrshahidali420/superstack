@@ -1,6 +1,6 @@
 {
   "name": "superstack",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "One disciplined loop for coding agents: Frame -> Plan -> Build (TDD) -> Review -> QA -> Secure -> Ship -> Learn, with an optional autonomous Ralph driver. Distills Superpowers, GSD, gstack, and Ralph, with Karpathy's anti-mistake guidelines baked in.",
   "author": {
     "name": "Mrshahidali420",

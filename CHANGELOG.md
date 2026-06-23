@@ -6,6 +6,8 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-24
+
 ### Added
 - **`/ss-report`:** a shareable Markdown run summary (phases, timing, change size) generated from
   the loop ledger + git; bash + PowerShell. (21 skills total.)
@@ -45,6 +47,7 @@ All notable changes to SuperStack are documented here. The format follows
 - Cross-platform installers and Claude Code plugin + marketplace manifests.
 - Skill-frontmatter linter (`scripts/lint-skills.sh`), self-test, and CI.
 
-[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Mrshahidali420/superstack/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Mrshahidali420/superstack/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Mrshahidali420/superstack/releases/tag/v0.1.0

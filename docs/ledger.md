@@ -12,3 +12,10 @@ skip-with-reason. `/ss-ship` runs it as its first gate and attaches the attestat
 
 **Hard enforcement (opt-in):** set `SUPERSTACK_AUDIT=1` and the audit hook blocks
 `git push` / `gh pr create` until the process is complete.
+
+## Run report
+
+`/ss-report` (`scripts/ss-report`, + PowerShell twin) turns the ledger into a copy-pasteable
+Markdown summary — phases run, skip reasons, elapsed time, and change size (commits/files/±/test
+files) — for a PR, release notes, or a status update. It's read-only and never gates; with no
+ledger it still reports the git change size. `--save` writes `.superstack/run-report-<change>.md`.

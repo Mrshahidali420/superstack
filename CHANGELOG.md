@@ -6,6 +6,10 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **`/ss-report`:** a shareable Markdown run summary (phases, timing, change size) generated from
+  the loop ledger + git; bash + PowerShell. (21 skills total.)
+
 ## [0.2.0] - 2026-06-23
 
 ### Added

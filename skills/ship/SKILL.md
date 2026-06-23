@@ -26,6 +26,8 @@ The seventh phase. Land the work cleanly.
    (smoke the key endpoints, watch for console/log errors).
 8. **Finish the branch** — present the merge / PR / keep / discard decision and clean up.
 
+> Optional: run `/ss-report` for a shareable summary of how this change was built (phases, timing, size) — paste it into the PR or share it.
+
 ## Gate
 
 CI is green and the PR is open (or the change is merged and verified in production).

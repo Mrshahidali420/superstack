@@ -19,3 +19,12 @@ skip-with-reason. `/ss-ship` runs it as its first gate and attaches the attestat
 Markdown summary — phases run, skip reasons, elapsed time, and change size (commits/files/±/test
 files) — for a PR, release notes, or a status update. It's read-only and never gates; with no
 ledger it still reports the git change size. `--save` writes `.superstack/run-report-<change>.md`.
+
+## Evolve
+
+`/ss-evolve` (`scripts/ss-evolve`, + PowerShell twin) turns accumulated ledger signal into
+improvement. It detects recurring patterns (a phase skipped >= a threshold, a gate that
+repeatedly fails) and either auto-applies a low-risk `CONTEXT.md` insight as a revertable
+`chore(evolve):` commit, or — for a brand-new skill — drafts it to `.superstack/proposals/`
+for your review. Deduped via `.superstack/evolve-state`; threshold via `.superstack/config`
+`evolve_threshold` (default 3); `--dry-run` previews. New skills never auto-commit.

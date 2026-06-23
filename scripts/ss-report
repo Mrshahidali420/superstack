@@ -18,6 +18,7 @@ done
 
 run=0; skipped=0; skips=""; notes=""; first_ts=""; last_ts=""
 if command -v jq >/dev/null 2>&1 && [ -f "$ledger" ]; then
+  jq_ledger="$(cygpath -m "$ledger" 2>/dev/null || echo "$ledger")"
   facts="$(jq -rn --arg c "$change" '
     [inputs|select(.change==$c)] as $e
     | ([$e[]|select(.event=="gate")|.phase]|unique|length),
@@ -26,7 +27,7 @@ if command -v jq >/dev/null 2>&1 && [ -f "$ledger" ]; then
       ([$e[]|select(.event=="note")|"\(.phase): \(.note)"]|join(", ")),
       ([$e[]|.ts]|sort|first // ""),
       ([$e[]|.ts]|sort|last // "")
-  ' "$ledger")"
+  ' "$jq_ledger" | tr -d '\r')"
   { read -r run; read -r skipped; read -r skips; read -r notes; read -r first_ts; read -r last_ts; } <<EOF
 $facts
 EOF

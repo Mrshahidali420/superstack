@@ -34,6 +34,17 @@ chk "save"     'bash "$ROOT/scripts/ss-report" --save >/dev/null 2>&1; [ -f "$SU
 chk "badflag"  '! bash "$ROOT/scripts/ss-report" --nope >/dev/null 2>&1'
 chk "empty"    'rm -f "$SUPERSTACK_DIR/ledger.jsonl"; bash "$ROOT/scripts/ss-report" | grep -q "Phases: 0 run, 0 skipped"'
 
+# re-seed the ledger (the "empty" test above removed it), then check bash<->ps1 parity
+bash "$ROOT/scripts/ledger" frame  gate pass >/dev/null
+bash "$ROOT/scripts/ledger" plan   gate pass >/dev/null
+bash "$ROOT/scripts/ledger" build  gate pass >/dev/null
+bash "$ROOT/scripts/ledger" review gate pass >/dev/null
+bash "$ROOT/scripts/ledger" secure skip skip "no IO" >/dev/null
+pb="$(bash "$ROOT/scripts/ss-report" | grep -vE '^Built through the loop')"
+PS1_WIN="$(cygpath -w "$ROOT/scripts/ss-report.ps1")"
+pp="$(pwsh -NoProfile -File "$PS1_WIN" | tr -d '\r' | grep -vE '^Built through the loop')"
+chk "ps1 parity" '[ "$pb" = "$pp" ]'
+
 echo
 [ "$fail" -eq 0 ] && echo "REPORT TESTS PASS" || echo "REPORT TESTS FAILED"
 exit "$fail"

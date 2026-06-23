@@ -10,7 +10,7 @@ case "$event"  in enter|gate|skip|note) ;; *) echo "ledger: invalid event '$even
 case "$status" in pass|fail|skip|na)    ;; *) echo "ledger: invalid status '$status'" >&2; exit 1;; esac
 ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 change="$(git branch --show-current 2>/dev/null || true)"; [ -n "$change" ] || change="default"
-esc() { local s="$1"; s="${s//\\/\\\\}"; s="${s//\"/\\\"}"; s="${s//$'\t'/ }"; s="${s//$'\n'/ }"; printf '%s' "$s"; }
+esc() { local s="$1"; s="${s//\\/\\\\}"; s="${s//\"/\\\"}"; s="${s//$'\t'/ }"; s="${s//$'\n'/ }"; s="${s//$'\r'/ }"; printf '%s' "$s"; }
 mkdir -p "$dir"
 printf '{"ts":"%s","change":"%s","phase":"%s","event":"%s","status":"%s","note":"%s"}\n' \
   "$ts" "$(esc "$change")" "$(esc "$phase")" "$event" "$status" "$(esc "$note")" >> "$dir/ledger.jsonl"

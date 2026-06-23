@@ -25,9 +25,9 @@ if ($Attest) {
   $line = 'SuperStack process:'
   foreach ($p in 'frame','plan','build','review','qa','secure','ship','learn') {
     $s = Get-State $p
-    if ($s -eq 'pass') { $line += " $p" + [char]0x2713 } elseif ($s -like 'skip:*') { $line += " $p" + [char]0x2298 }
+    if ($s -eq 'pass') { $line += " $p OK" } elseif ($s -like 'skip:*') { $line += " $p SKIP" }
   }
-  Write-Host $line; exit 0
+  Write-Output $line; exit 0
 }
 Write-Host "Process audit for '$Change' (mandatory: $($mandatory -join ',')):"
 $missing = @()

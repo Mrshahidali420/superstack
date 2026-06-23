@@ -25,9 +25,9 @@ state() { # echo pass | skip:<reason> | (empty)
 if [ "$attest" -eq 1 ]; then
   line="SuperStack process:"
   for p in frame plan build review qa secure ship learn; do
-    case "$(state "$p")" in pass) line="$line ${p}✓";; skip:*) line="$line ${p}⊘";; esac
+    case "$(state "$p")" in pass) line="$line ${p} OK";; skip:*) line="$line ${p} SKIP";; esac
   done
-  printf '%b\n' "$line"; exit 0
+  printf '%s\n' "$line"; exit 0
 fi
 
 echo "Process audit for '$change' (mandatory: $mandatory):"

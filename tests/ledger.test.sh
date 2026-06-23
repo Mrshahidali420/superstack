@@ -28,6 +28,10 @@ chk "audit complete via skip" 'bash "$ROOT/scripts/ss-audit" br2 >/dev/null 2>&1
 # attestation line contains a tick
 chk "audit attest" 'bash "$ROOT/scripts/ss-audit" --attest | grep -q "SuperStack process:"'
 
+# ledger normalizes embedded CR so the line stays valid JSON
+bash "$ROOT/scripts/ledger" build note na "$(printf 'a\rb')" >/dev/null
+chk "ledger CR safe" 'tail -1 "$SUPERSTACK_DIR/ledger.jsonl" | jq -e . >/dev/null'
+
 # audit-check inert when SUPERSTACK_AUDIT unset
 chk "hook inert" 'printf "%s" "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git push\"}}" | bash "$ROOT/hooks/audit-check"'
 

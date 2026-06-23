@@ -23,6 +23,15 @@ you would need to plan), **enter the loop at the right phase** and run the match
 For a genuinely trivial change (a one-line fix, a typo, a rename), use judgment
 and skip the ceremony — Karpathy Law 2 applies to process too.
 
+**Fast path — scale the loop to the work.** Not everything needs eight phases:
+
+- Typo / rename / comment → `Ship`.
+- Small, well-understood change → `Plan → Build → Ship`.
+- Bug fix → `QA (reproduce) → Build → Review → Ship`.
+- New feature or anything risky → the full loop.
+
+The full loop is for features, not one-liners. When in doubt, start one phase earlier.
+
 ---
 
 ## Karpathy's Four Laws (always on)

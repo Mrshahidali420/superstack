@@ -8,7 +8,9 @@ Frame → Plan → Build → Review → QA → Secure → Ship → Learn.
 
 A distillation of [Superpowers](https://github.com/obra/superpowers), [GSD](https://github.com/open-gsd/gsd-core), [gstack](https://github.com/garrytan/gstack), and [Ralph](https://github.com/snarktank/ralph) — with [Karpathy's](https://github.com/forrestchang/andrej-karpathy-skills) anti-mistake laws baked in.
 
-`MIT` · works with Claude Code and other skill-aware agents
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) ![status v0.1](https://img.shields.io/badge/status-v0.1-orange.svg)
+
+Built for Claude Code today; portable to other skill-aware agents.
 
 </div>
 
@@ -107,6 +109,21 @@ loop scripts into place, and offers to merge `CLAUDE.md` into your global or pro
 Full operating system: [`CLAUDE.md`](CLAUDE.md) · design notes: [`docs/workflow.md`](docs/workflow.md).
 
 ---
+
+## See it work
+
+```
+You:        Build me a URL-shortener API.
+/ss-frame   Pushes back — "single-user or multi-tenant? custom slugs?"
+            → writes specs/url-shortener.md; you approve.
+/ss-plan    → 4 tasks, each with its own test, in PLAN.md
+/ss-build   → TDD per task: failing test → minimal handler → green
+/ss-review  → flags a missing slug-collision check; auto-fixes it
+/ss-qa      → hits the running API, catches a 500 on duplicate slug,
+              fixes it, adds a regression test
+/ss-secure  → confirms input validation, no secrets in the diff
+/ss-ship    → conventional commit, PR opened, CI green
+```
 
 ## What SuperStack is *not*
 

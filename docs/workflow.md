@@ -16,16 +16,9 @@ the next begins, and you can **re-enter** the loop wherever the work actually st
 
 ## Phases and gates
 
-| Phase | Command | Gate |
-|-------|---------|------|
-| Frame | `/ss-frame` | A written spec the human approved |
-| Plan | `/ss-plan` | Every task is verifiable and fits one context window |
-| Build | `/ss-build` | Tests green; the diff traces line-by-line to the spec |
-| Review | `/ss-review` | No CRITICAL or HIGH issues open |
-| QA | `/ss-qa` | Core flows pass; every fix has a regression test |
-| Secure | `/ss-secure` | No CRITICAL findings; no secrets in the diff |
-| Ship | `/ss-ship` | CI green; PR opened (or merged + verified) |
-| Learn | `/ss-learn` | A cold session could resume from the artifacts |
+The canonical phase → command → gate table lives in **[`CLAUDE.md`](../CLAUDE.md)** — the file
+the agent actually loads, and the single source of truth. This page is the deep dive: where to
+enter the loop, why the gates exist, and how context engineering threads through every phase.
 
 ## Where to enter
 

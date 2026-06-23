@@ -18,12 +18,10 @@ loop instead of four overlapping ones.
 
 ## And Karpathy's four laws sit on top
 
-They are the guardrails that keep every phase from drifting into the common LLM failure modes:
-
-1. **Think before coding** — surface assumptions and alternatives; ask when unclear.
-2. **Simplicity first** — minimum code, nothing speculative.
-3. **Surgical changes** — touch only what the request requires.
-4. **Goal-driven execution** — turn tasks into verifiable goals and loop until they pass.
+Four guardrails keep every phase from drifting into the common LLM failure modes — think
+before coding, simplicity first, surgical changes, goal-driven execution. They are stated
+canonically in **[`CLAUDE.md`](../CLAUDE.md)**; the point here is that they apply to *every*
+phase, not just Build.
 
 ## The core bet
 

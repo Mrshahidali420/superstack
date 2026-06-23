@@ -1,5 +1,8 @@
 # SuperStack — Operating System for Coding Agents
 
+> **Canonical reference.** This file is the single source of truth for the loop, the gates, and
+> the laws. The README and `docs/` summarize or expand on it; if they ever disagree, this wins.
+
 SuperStack turns a coding agent into a disciplined engineering team that runs
 **one loop** on every non-trivial task:
 

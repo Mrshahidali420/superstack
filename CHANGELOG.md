@@ -9,6 +9,9 @@ All notable changes to SuperStack are documented here. The format follows
 ### Added
 - **`/ss-report`:** a shareable Markdown run summary (phases, timing, change size) generated from
   the loop ledger + git; bash + PowerShell. (21 skills total.)
+- **`/ss-evolve`:** detects recurring ledger patterns (skipped phases, failing gates) and
+  auto-applies low-risk `CONTEXT.md`/config fixes (revertable `chore(evolve):` commits), routing
+  new-skill drafts to `.superstack/proposals/` for review; bash + PowerShell. (22 skills total.)
 
 ## [0.2.0] - 2026-06-23
 

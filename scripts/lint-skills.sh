@@ -25,8 +25,8 @@ for s in "${skills[@]}"; do
   name="$(field "$fm" name)"
   desc="$(field "$fm" description)"
   case "$name" in
-    ss-?*) : ;;
-    *) err "$rel: name must start with 'ss-' (got '${name:-<none>}')" ;;
+    ss-?*|superstack) : ;;
+    *) err "$rel: name must be 'superstack' (bootstrap) or start with 'ss-' (got '${name:-<none>}')" ;;
   esac
   [ -n "$desc" ] || err "$rel: missing description"
 done

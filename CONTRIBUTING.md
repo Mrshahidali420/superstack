@@ -24,7 +24,9 @@ description: Use when ...      # trigger-focused, third person, says WHEN to fir
 ```
 
 The directory name should match the command suffix (`skills/secure/` → `ss-secure`).
-Agents live at `agents/ss-*.md` with the same `name` + `description` frontmatter.
+Agents live at `agents/ss-*.md` with the same `name` + `description` frontmatter. The one
+exception to the `ss-` rule is the bootstrap skill `skills/superstack/SKILL.md` (name
+`superstack`), which auto-loads the methodology when the plugin is installed.
 
 `scripts/lint-skills.sh` enforces this and runs in CI on every push and PR — run it
 locally first.

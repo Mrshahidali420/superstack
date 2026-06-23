@@ -78,8 +78,10 @@ git clone https://github.com/Mrshahidali420/superstack ~/.superstack && ~/.super
 git clone https://github.com/Mrshahidali420/superstack "$HOME\.superstack"; & "$HOME\.superstack\install.ps1"
 ```
 
-The installer copies the `/ss-*` skills and agents into `~/.claude/`, drops the Ralph
-loop scripts into place, and offers to merge `CLAUDE.md` into your global or project config.
+The installer targets Claude Code by default, copying the `/ss-*` skills and agents into
+`~/.claude/`. Pass `--host codex|cursor|opencode|factory|kiro` (or `-Agent` on Windows), or
+`--all`, to install for other agents. Then merge `CLAUDE.md` into your global or project config
+to adopt the loop.
 
 ---
 
@@ -96,6 +98,8 @@ loop scripts into place, and offers to merge `CLAUDE.md` into your global or pro
 | `/ss-ship` | Ship | Coverage gate, conventional commit, PR, optional deploy |
 | `/ss-ralph` | Autonomy | Run the loop unattended until a PRD is fully done |
 | `/ss-learn` | Learn | Persist learnings so the next session starts smart |
+
+**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` — run `/ss-help` for the full index.
 
 ---
 

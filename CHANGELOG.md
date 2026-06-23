@@ -7,9 +7,18 @@ All notable changes to SuperStack are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Eight supporting skills: `/ss-debug`, `/ss-guard`, `/ss-respond`, `/ss-worktree`,
+  `/ss-pause`, `/ss-resume`, `/ss-retro`, `/ss-docs` (19 skills total).
+- Cross-agent install: `install.sh --host <agent>|--all` and `install.ps1 -Agent|-All`
+  for Codex, Cursor, OpenCode, Factory, and Kiro (Claude Code remains the default).
+- Ralph loop: `--dry-run` preview, per-iteration run logs (`runs/`), and archive-on-completion (`archive/`).
 - `CHANGELOG.md` (this file); `/ss-ship` now bumps it as part of shipping.
 - CI runs the linter on `v*` and `superstack--v*` tags, not just branch pushes.
 - `SPDX-License-Identifier: MIT` headers on the shell and PowerShell scripts.
+
+### Changed
+- Linter upgraded from a structural check to a quality check: trigger-style descriptions,
+  a single H1, resolvable `[[wikilinks]]`, and loop completeness.
 
 ## [0.1.0] - 2026-06-23
 

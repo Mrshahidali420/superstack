@@ -27,6 +27,20 @@ FRAME → PLAN → BUILD → REVIEW → QA → SECURE → SHIP → LEARN
 | `/ss-learn` | Learn | Persist learnings so the next session starts smart |
 | `/ss-help` | — | This index |
 
+## Supporting skills
+
+Cross-cutting and periodic — pull them in at any phase:
+
+| Command | Use when |
+|---------|----------|
+| `/ss-debug` | Something's broken — root-cause it before fixing |
+| `/ss-guard` | Risky work — warn before destructive commands; freeze edits to a dir |
+| `/ss-respond` | You received code-review feedback — verify before applying |
+| `/ss-worktree` | Isolate risky or parallel work in its own git worktree |
+| `/ss-pause` · `/ss-resume` | Hand off / pick up work across sessions |
+| `/ss-retro` | End of a sprint — reflect and turn lessons into changes |
+| `/ss-docs` | After shipping — bring docs back in line with the code |
+
 ## Where to enter
 
 - "What should we build?" → **`/ss-frame`**

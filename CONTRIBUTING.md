@@ -28,8 +28,9 @@ Agents live at `agents/ss-*.md` with the same `name` + `description` frontmatter
 exception to the `ss-` rule is the bootstrap skill `skills/superstack/SKILL.md` (name
 `superstack`), which auto-loads the methodology when the plugin is installed.
 
-`scripts/lint-skills.sh` enforces this and runs in CI on every push and PR — run it
-locally first.
+`scripts/lint-skills.sh` enforces this — plus trigger-style descriptions, a single H1,
+resolvable `[[wikilinks]]`, and loop completeness — and runs in CI on every push, PR, and
+release tag. Run it locally first.
 
 ## Adding or changing a skill
 

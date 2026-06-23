@@ -70,6 +70,20 @@ The full loop is for features, not one-liners. When in doubt, start one phase ea
 You may re-enter the loop at any phase. A bug report starts at **QA**; a refactor
 starts at **Plan**; "what should we build?" starts at **Frame**.
 
+## Supporting skills
+
+Beyond the eight phases, pull these in whenever they apply:
+
+| Command | Use when |
+|---------|----------|
+| `/ss-debug` | Something is broken — investigate the root cause before fixing |
+| `/ss-guard` | Risky work — confirm destructive commands; optionally freeze edits to a directory |
+| `/ss-respond` | You received code-review feedback — verify each point before applying |
+| `/ss-worktree` | Isolate risky or parallel work in its own git worktree |
+| `/ss-pause` / `/ss-resume` | Hand off and pick up work cleanly across sessions |
+| `/ss-retro` | Periodically — reflect and turn lessons into concrete changes |
+| `/ss-docs` | After shipping — bring documentation back in line with the code |
+
 ---
 
 ## Context Engineering (the thing that makes it scale)

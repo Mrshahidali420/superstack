@@ -26,6 +26,8 @@ execute without judgment.
 
 Every task is individually verifiable and fits one context window.
 
+Record the outcome: `ledger plan gate pass` — or `ledger plan skip skip "<reason>"` if you deliberately skipped this phase.
+
 ## Lineage
 
 Superpowers `writing-plans` + GSD `plan` phase + gstack `/plan-eng-review`.

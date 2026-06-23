@@ -29,6 +29,8 @@ Any implementation code written before its test gets deleted and redone test-fir
 
 All tests green; the diff maps line-by-line to the plan/spec. Then `/ss-review`.
 
+Record the outcome: `ledger build gate pass` — or `ledger build skip skip "<reason>"` if you deliberately skipped this phase.
+
 ## Lineage
 
 Superpowers `test-driven-development` + `subagent-driven-development` + GSD `execute` waves.

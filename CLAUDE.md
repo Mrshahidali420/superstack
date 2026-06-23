@@ -97,6 +97,8 @@ Output quality degrades as a context window fills ("context rot"). Defend agains
   These survive compaction and brand-new sessions.
 - **Right-size tasks.** If a task won't fit in one context window, split it before
   starting — an agent that runs out of context mid-task produces poor code.
+- **Leave a trail.** Each phase records its gate outcome to `.superstack/ledger.jsonl` via the
+  `ledger` helper, so `/ss-audit` can verify the loop actually ran before you ship.
 
 ---
 

@@ -25,6 +25,8 @@ human is actually trying to do, then write it down.
 
 A written spec the human has approved. That spec is the input to `/ss-plan`.
 
+Record the outcome: `ledger frame gate pass` — or `ledger frame skip skip "<reason>"` if you deliberately skipped this phase.
+
 ## Lineage
 
 Superpowers `brainstorming` + gstack `/office-hours` + Karpathy "think before coding".

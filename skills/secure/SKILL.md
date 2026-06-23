@@ -25,6 +25,8 @@ user input, persisted data, or money.
 
 No CRITICAL findings and no secrets in the diff. Then `/ss-ship`.
 
+Record the outcome: `ledger secure gate pass` — or `ledger secure skip skip "<reason>"` if you deliberately skipped this phase.
+
 ## Lineage
 
 gstack `/cso` (OWASP + STRIDE, exploit-per-finding, confidence gate).

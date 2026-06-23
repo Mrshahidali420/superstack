@@ -21,6 +21,8 @@ The fifth phase. Tests prove units work; QA proves the *thing* works.
 
 Core flows pass and every fix has a regression test. Then `/ss-secure`.
 
+Record the outcome: `ledger qa gate pass` — or `ledger qa skip skip "<reason>"` if you deliberately skipped this phase.
+
 ## Note
 
 SuperStack does not ship a browser. Use your agent's built-in browser tool, or run

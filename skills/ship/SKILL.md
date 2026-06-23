@@ -27,6 +27,8 @@ The seventh phase. Land the work cleanly.
 
 CI is green and the PR is open (or the change is merged and verified in production).
 
+Record the outcome: `ledger ship gate pass` — or `ledger ship skip skip "<reason>"` if you deliberately skipped this phase.
+
 ## Lineage
 
 gstack `/ship` + `/land-and-deploy` + Superpowers `finishing-a-development-branch` + GSD `ship`.

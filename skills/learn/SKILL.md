@@ -23,6 +23,8 @@ available, automatically, the next time.
 
 A brand-new session, reading only these artifacts, could resume the work correctly.
 
+Record the outcome: `ledger learn gate pass` — or `ledger learn skip skip "<reason>"` if you deliberately skipped this phase.
+
 ## Lineage
 
 gstack `/learn` + GSD `STATE.md` / `CONTEXT.md` + Ralph's append-only progress log.

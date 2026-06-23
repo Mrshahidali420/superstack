@@ -26,6 +26,8 @@ The fourth phase. Find the bugs that pass CI but blow up in production.
 
 No CRITICAL or HIGH issues left open. Then `/ss-qa`.
 
+Record the outcome: `ledger review gate pass` — or `ledger review skip skip "<reason>"` if you deliberately skipped this phase.
+
 ## Lineage
 
 Superpowers `requesting-code-review` + gstack `/review` and `/codex` second opinion.

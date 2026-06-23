@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Verify the loop ran: every mandatory phase has a passing gate or an explicit skip-with-reason.
+# Usage: ss-audit [change] | ss-audit --attest
+set -uo pipefail
+dir="${SUPERSTACK_DIR:-.superstack}"
+ledger="$dir/ledger.jsonl"; config="$dir/config"
+mandatory="review,secure"
+[ -f "$config" ] && { v="$(grep -E '^mandatory_phases=' "$config" | tail -1 | cut -d= -f2-)"; [ -n "$v" ] && mandatory="$v"; }
+attest=0; change=""
+case "${1:-}" in --attest) attest=1;; "") ;; *) change="$1";; esac
+[ -n "$change" ] || change="$(git branch --show-current 2>/dev/null || echo default)"
+[ -n "$change" ] || change="default"
+command -v jq >/dev/null 2>&1 || { echo "ss-audit: jq required" >&2; exit 2; }
+[ -f "$ledger" ] || { echo "ss-audit: no ledger at $ledger"; exit 1; }
+
+state() { # echo pass | skip:<reason> | (empty)
+  jq -rn --arg c "$change" --arg p "$1" '
+    [ inputs | select(.change==$c and .phase==$p) ] as $e
+    | if ([$e[] | select(.event=="gate" and .status=="pass")] | length) > 0 then "pass"
+      elif ([$e[] | select(.event=="skip")] | length) > 0 then "skip:" + (([$e[] | select(.event=="skip")] | last).note // "")
+      else "" end' "$ledger"
+}
+
+if [ "$attest" -eq 1 ]; then
+  line="SuperStack process:"
+  for p in frame plan build review qa secure ship learn; do
+    case "$(state "$p")" in pass) line="$line ${p}✓";; skip:*) line="$line ${p}⊘";; esac
+  done
+  printf '%b\n' "$line"; exit 0
+fi
+
+echo "Process audit for '$change' (mandatory: $mandatory):"
+missing=""
+IFS=','; for p in $mandatory; do
+  case "$(state "$p")" in
+    pass)   echo "  $p: pass";;
+    skip:*) echo "  $p: skip";;
+    *)      echo "  $p: MISSING"; missing="$missing $p";;
+  esac
+done; unset IFS
+[ -z "$missing" ] && { echo "VERDICT: COMPLETE"; exit 0; }
+echo "VERDICT: INCOMPLETE — missing:$missing"; exit 1

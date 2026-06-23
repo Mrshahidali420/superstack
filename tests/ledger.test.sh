@@ -15,6 +15,19 @@ chk "ledger append" 'tail -1 "$SUPERSTACK_DIR/ledger.jsonl" | jq -e ".phase==\"r
 # ledger rejects an invalid event
 chk "ledger enum guard" '! bash "$ROOT/scripts/ledger" review bogus pass 2>/dev/null'
 
+
+# ss-audit: incomplete (only review recorded so far) -> exit 1
+chk "audit incomplete" '! bash "$ROOT/scripts/ss-audit" >/dev/null 2>&1'
+# add secure pass -> complete -> exit 0
+bash "$ROOT/scripts/ledger" secure gate pass "clean" >/dev/null
+chk "audit complete via pass" 'bash "$ROOT/scripts/ss-audit" >/dev/null 2>&1'
+# fresh change where secure is explicitly skipped -> still complete
+printf '{"ts":"t","change":"br2","phase":"review","event":"gate","status":"pass","note":""}\n'  >> "$SUPERSTACK_DIR/ledger.jsonl"
+printf '{"ts":"t","change":"br2","phase":"secure","event":"skip","status":"skip","note":"no IO"}\n' >> "$SUPERSTACK_DIR/ledger.jsonl"
+chk "audit complete via skip" 'bash "$ROOT/scripts/ss-audit" br2 >/dev/null 2>&1'
+# attestation line contains a tick
+chk "audit attest" 'bash "$ROOT/scripts/ss-audit" --attest | grep -q "SuperStack process:"'
+
 echo
 [ "$fail" -eq 0 ] && echo "LEDGER TESTS PASS" || echo "LEDGER TESTS FAILED"
 exit "$fail"

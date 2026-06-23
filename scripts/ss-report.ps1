@@ -43,7 +43,7 @@ if (Test-Path $audit) {
   $prev = $env:SUPERSTACK_DIR
   try {
     $env:SUPERSTACK_DIR = $dir   # scope the resolved path to the child call only
-    $raw = (& $audit -Attest) 2>$null
+    $raw = (& $audit -Attest) 2>$null 6>$null
     if ($raw -is [array]) { $raw = $raw -join "`n" }
     if ("$raw".StartsWith('SuperStack process:')) { $att = "$raw".Trim() }
   } catch {} finally { $env:SUPERSTACK_DIR = $prev }

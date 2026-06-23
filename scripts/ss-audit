@@ -13,14 +13,12 @@ case "${1:-}" in --attest) attest=1;; "") ;; *) change="$1";; esac
 [ -n "$change" ] || change="default"
 command -v jq >/dev/null 2>&1 || { echo "ss-audit: jq required" >&2; exit 2; }
 [ -f "$ledger" ] || { echo "ss-audit: no ledger at $ledger"; exit 1; }
-jq_ledger="$(cygpath -m "$ledger" 2>/dev/null || echo "$ledger")"
-
 state() { # echo pass | skip:<reason> | (empty)
   jq -rn --arg c "$change" --arg p "$1" '
     [ inputs | select(.change==$c and .phase==$p) ] as $e
     | if ([$e[] | select(.event=="gate" and .status=="pass")] | length) > 0 then "pass"
       elif ([$e[] | select(.event=="skip")] | length) > 0 then "skip:" + (([$e[] | select(.event=="skip")] | last).note // "")
-      else "" end' "$jq_ledger" | tr -d '\r'
+      else "" end' < "$ledger" | tr -d '\r'
 }
 
 if [ "$attest" -eq 1 ]; then

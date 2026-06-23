@@ -40,10 +40,14 @@ bash "$ROOT/scripts/ledger" plan   gate pass >/dev/null
 bash "$ROOT/scripts/ledger" build  gate pass >/dev/null
 bash "$ROOT/scripts/ledger" review gate pass >/dev/null
 bash "$ROOT/scripts/ledger" secure skip skip "no IO" >/dev/null
-pb="$(bash "$ROOT/scripts/ss-report" | grep -vE '^Built through the loop')"
-PS1_WIN="$(cygpath -w "$ROOT/scripts/ss-report.ps1")"
-pp="$(pwsh -NoProfile -File "$PS1_WIN" | tr -d '\r' | grep -vE '^Built through the loop')"
-chk "ps1 parity" '[ "$pb" = "$pp" ]'
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-report.ps1")"; else ps1arg="$ROOT/scripts/ss-report.ps1"; fi
+  pb="$(bash "$ROOT/scripts/ss-report" | grep -vE '^Built through the loop')"
+  pp="$(pwsh -NoProfile -File "$ps1arg" | tr -d '\r' | grep -vE '^Built through the loop')"
+  chk "ps1 parity" '[ "$pb" = "$pp" ]'
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
 
 echo
 [ "$fail" -eq 0 ] && echo "REPORT TESTS PASS" || echo "REPORT TESTS FAILED"

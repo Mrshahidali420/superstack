@@ -12,6 +12,9 @@ All notable changes to SuperStack are documented here. The format follows
 - Cross-agent install: `install.sh --host <agent>|--all` and `install.ps1 -Agent|-All`
   for Codex, Cursor, OpenCode, Factory, and Kiro (Claude Code remains the default).
 - Ralph loop: `--dry-run` preview, per-iteration run logs (`runs/`), and archive-on-completion (`archive/`).
+- Hooks: a **SessionStart** bootstrap hook (cross-platform polyglot launcher) that activates the
+  loop, and an **opt-in guard** `PreToolUse` hook (`SUPERSTACK_GUARD` / `SUPERSTACK_FREEZE_DIR`,
+  off by default). Linter now validates `hooks/hooks.json`; self-test covers hook behavior.
 - `CHANGELOG.md` (this file); `/ss-ship` now bumps it as part of shipping.
 - CI runs the linter on `v*` and `superstack--v*` tags, not just branch pushes.
 - `SPDX-License-Identifier: MIT` headers on the shell and PowerShell scripts.

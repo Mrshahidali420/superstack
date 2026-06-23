@@ -129,6 +129,17 @@ You:        Build me a URL-shortener API.
 /ss-ship    → conventional commit, PR opened, CI green
 ```
 
+## Hooks
+
+SuperStack ships a **SessionStart** hook that activates the loop from the first message (and
+after `/clear` or compaction), plus an **opt-in guard** (`PreToolUse`, off by default):
+
+- `SUPERSTACK_GUARD=1` — block destructive shell commands (`rm -rf`, force-push, `DROP`…).
+- `SUPERSTACK_FREEZE_DIR=<dir>` — block edits outside that directory.
+
+Stack-specific hooks (format/lint/test on save) are intentionally **not** bundled — see
+[`docs/hooks.md`](docs/hooks.md) for snippets to add to your own `settings.json`.
+
 ## What SuperStack is *not*
 
 It does not re-implement gstack's Playwright browse server or its prompt-injection

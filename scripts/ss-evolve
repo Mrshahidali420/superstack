@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Detect strong patterns in the loop ledger; optionally auto-apply low-risk fixes.
+# Usage: ss-evolve [--json] [--new-only] [--apply] [--dry-run]
+set -uo pipefail
+dir="${SUPERSTACK_DIR:-.superstack}"
+ledger="$dir/ledger.jsonl"; config="$dir/config"; state="$dir/evolve-state"
+json=0; newonly=0; apply=0; dry=0
+for a in "$@"; do
+  case "$a" in
+    --json) json=1;;
+    --new-only) newonly=1;;
+    --apply) apply=1;;
+    --dry-run) dry=1;;
+    *) echo "ss-evolve: unknown flag '$a' (usage: ss-evolve [--json] [--new-only] [--apply] [--dry-run])" >&2; exit 1;;
+  esac
+done
+command -v jq >/dev/null 2>&1 || { echo "ss-evolve: jq required" >&2; exit 2; }
+
+threshold=3
+[ -f "$config" ] && { v="$(grep -E '^evolve_threshold=' "$config" | tail -1 | cut -d= -f2-)"; [ -n "$v" ] && threshold="$v"; }
+
+findings=""
+if [ -f "$ledger" ]; then
+  findings="$(jq -rn --argjson th "$threshold" '
+    [inputs] as $all
+    | ( $all | map(select(.event=="skip")) | group_by(.phase) | map(
+          { type:"skipped", phase:.[0].phase, count:length,
+            reason:( [.[].note] | map(select(. != null and . != "")) | if length==0 then "" else (group_by(.)|max_by(length)|.[0]) end ) } ) ) as $s
+    | ( $all | map(select(.event=="gate" and .status=="fail")) | group_by(.phase) | map(
+          { type:"failing", phase:.[0].phase, count:length, reason:"" } ) ) as $f
+    | ($s + $f) | .[] | select(.count >= $th)
+    | [.type,.phase,(.count|tostring),.reason] | @tsv
+  ' < "$ledger" | tr -d '\r')"
+fi
+
+seen() { [ -f "$state" ] && grep -qxF "$1" "$state"; }
+
+apply_one() { # type phase count reason
+  local id="$1:$2" line
+  case "$1" in
+    skipped) line="- **\`$2\` is routinely skipped** (${3}x${4:+; usual reason: \"$4\"}). If that is expected here, keep recording the skip reason or drop \`$2\` from \`.superstack/config\` \`mandatory_phases\`; otherwise it is a process gap to close.";;
+    failing) line="- **\`$2\` gate often fails first pass** (${3}x). Recurring friction - see the ledger notes; consider tightening the upstream phase or adding a checklist.";;
+  esac
+  if [ "$dry" -eq 1 ]; then echo "[dry-run] $id -> append to CONTEXT.md + commit 'chore(evolve): document $id'"; return; fi
+  [ -f CONTEXT.md ] || printf '# Context\n' > CONTEXT.md
+  grep -qxF '## Evolved insights' CONTEXT.md || printf '\n## Evolved insights\n' >> CONTEXT.md
+  printf '%s\n' "$line" >> CONTEXT.md
+  mkdir -p "$dir"; printf '%s\n' "$id" >> "$state"
+  local sib; sib="$(cd "$(dirname "$0")" && pwd)/ledger"
+  [ -f "$sib" ] && bash "$sib" evolve note na "applied $id" >/dev/null 2>&1
+  git add CONTEXT.md >/dev/null 2>&1 && git commit -q -m "chore(evolve): document $id" >/dev/null 2>&1
+  echo "applied $id (revert with: git revert HEAD)"
+}
+
+items=""; n=0
+while IFS=$'\t' read -r t p c r; do
+  [ -n "$t" ] || continue
+  id="$t:$p"
+  { [ "$newonly" -eq 1 ] || [ "$apply" -eq 1 ]; } && seen "$id" && continue
+  n=$((n + 1))
+  if [ "$apply" -eq 1 ]; then
+    apply_one "$t" "$p" "$c" "$r"
+  elif [ "$json" -eq 1 ]; then
+    items="${items:+$items,}$(jq -cn --arg id "$id" --arg t "$t" --arg p "$p" --argjson c "$c" --arg r "$r" '{id:$id,type:$t,phase:$p,count:$c,reason:$r}')"
+  else
+    printf -- '- [%s] %s (x%s)%s\n' "$t" "$p" "$c" "${r:+ - reason: \"$r\"}"
+  fi
+done <<EOF
+$findings
+EOF
+
+if [ "$apply" -eq 0 ] && [ "$json" -eq 1 ]; then printf '[%s]\n' "$items"
+elif [ "$apply" -eq 0 ] && [ "$n" -eq 0 ]; then echo "ss-evolve: no patterns at or above threshold $threshold"
+elif [ "$apply" -eq 1 ] && [ "$n" -eq 0 ]; then echo "ss-evolve: nothing new to apply"
+fi
+exit 0

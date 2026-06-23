@@ -1,0 +1,13 @@
+# Normalize line endings across platforms.
+* text=auto eol=lf
+
+# Shell scripts MUST stay LF or they fail on macOS/Linux.
+*.sh text eol=lf
+
+# PowerShell is happiest with CRLF on Windows.
+*.ps1 text eol=crlf
+
+# Binary assets (none yet, but future-proof).
+*.png binary
+*.webp binary
+*.jpg binary

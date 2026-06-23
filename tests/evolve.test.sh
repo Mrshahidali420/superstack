@@ -39,6 +39,17 @@ d="$(bash "$ROOT/scripts/ss-evolve" --apply --dry-run)"
 chk "dryrun prints" 'printf "%s" "$d" | grep -q "dry-run"'
 chk "dryrun nowrite" '[ ! -f "$SUPERSTACK_DIR/evolve-state" ]'
 
+# parity: ps1 emits the same human-readable findings as bash (guarded for CI without pwsh)
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-evolve.ps1")"; else ps1arg="$ROOT/scripts/ss-evolve.ps1"; fi
+  rm -f "$SUPERSTACK_DIR/evolve-state"
+  eb="$(bash "$ROOT/scripts/ss-evolve")"
+  ep="$(pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
+  chk "ps1 parity" '[ "$eb" = "$ep" ]'
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "EVOLVE TESTS PASS" || echo "EVOLVE TESTS FAILED"
 exit "$fail"

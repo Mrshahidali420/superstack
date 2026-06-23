@@ -1,37 +1,59 @@
 #!/usr/bin/env pwsh
 # SPDX-License-Identifier: MIT
-# SuperStack installer (Windows / PowerShell).
-# Copies the /ss-* skills and agents into ~/.claude and points you at CLAUDE.md.
+# SuperStack installer (Windows / PowerShell). Installs the /ss-* skills (and agents, for
+# Claude Code) into one or more coding-agent homes.
+#
+#   ./install.ps1                # Claude Code (default)
+#   ./install.ps1 -Agent codex   # claude|codex|cursor|opencode|factory|kiro
+#   ./install.ps1 -All           # every detected agent
+#
+# Override the install root with $env:SUPERSTACK_INSTALL_HOME (used for testing).
+param([string]$Agent = "claude", [switch]$All)
 $ErrorActionPreference = 'Stop'
 
-$Src = $PSScriptRoot
-$ClaudeHome = if ($env:CLAUDE_HOME) { $env:CLAUDE_HOME } else { Join-Path $HOME '.claude' }
+$Src  = $PSScriptRoot
+$Base = if ($env:SUPERSTACK_INSTALL_HOME) { $env:SUPERSTACK_INSTALL_HOME } else { $HOME }
 
-Write-Host "SuperStack installer"
-Write-Host "  source: $Src"
-Write-Host "  target: $ClaudeHome"
-New-Item -ItemType Directory -Force -Path (Join-Path $ClaudeHome 'skills') | Out-Null
-New-Item -ItemType Directory -Force -Path (Join-Path $ClaudeHome 'agents') | Out-Null
+$SkillsRel = @{
+  claude   = '.claude/skills';   codex   = '.codex/skills';   cursor = '.cursor/skills'
+  opencode = '.config/opencode/skills'; factory = '.factory/skills'; kiro = '.kiro/skills'
+}
+$HostHome = @{
+  claude = '.claude'; codex = '.codex'; cursor = '.cursor'
+  opencode = '.config/opencode'; factory = '.factory'; kiro = '.kiro'
+}
 
-Get-ChildItem -Directory (Join-Path $Src 'skills') | ForEach-Object {
-  if (Test-Path (Join-Path $_.FullName 'SKILL.md')) {
-    $name = "ss-$($_.Name)"
-    $dest = Join-Path $ClaudeHome "skills\$name"
-    if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
-    Copy-Item -Recurse $_.FullName $dest
-    Write-Host "  + skill  $name"
+function Install-AgentHost([string]$h) {
+  if (-not $SkillsRel.ContainsKey($h)) { Write-Host "  unknown host: $h (skipped)"; return }
+  $dir = Join-Path $Base $SkillsRel[$h]
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  $n = 0
+  Get-ChildItem -Directory (Join-Path $Src 'skills') | ForEach-Object {
+    if (Test-Path (Join-Path $_.FullName 'SKILL.md')) {
+      $dest = Join-Path $dir ("ss-" + $_.Name)
+      if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
+      Copy-Item -Recurse $_.FullName $dest
+      $n++
+    }
+  }
+  Write-Host ("  {0}: {1} skills -> {2}" -f $h, $n, $dir)
+  if ($h -eq 'claude') {
+    $agents = Join-Path $Base '.claude/agents'
+    New-Item -ItemType Directory -Force -Path $agents | Out-Null
+    Get-ChildItem (Join-Path $Src 'agents') -Filter *.md | ForEach-Object { Copy-Item $_.FullName $agents -Force }
+    Write-Host "  claude: agents -> $agents"
   }
 }
 
-Get-ChildItem (Join-Path $Src 'agents') -Filter *.md | ForEach-Object {
-  Copy-Item $_.FullName (Join-Path $ClaudeHome 'agents') -Force
-  Write-Host "  + agent  $($_.BaseName)"
+Write-Host "SuperStack installer (source: $Src, base: $Base)"
+if ($All) {
+  foreach ($h in $SkillsRel.Keys) {
+    $marker = Join-Path $Base $HostHome[$h]
+    if ($h -eq 'claude' -or (Test-Path $marker)) { Install-AgentHost $h }
+  }
+} else {
+  Install-AgentHost $Agent
 }
 
 Write-Host ""
-Write-Host "Done. The /ss-* skills and agents are installed."
-Write-Host "Ralph loop: $Src\ralph\loop.ps1"
-Write-Host ""
-Write-Host "Adopt the operating system by merging CLAUDE.md into your config:"
-Write-Host "  global  -> $ClaudeHome\CLAUDE.md"
-Write-Host "  project -> .\CLAUDE.md   (in any repo you work in)"
+Write-Host "Done. Merge CLAUDE.md into your config (global $Base\.claude\CLAUDE.md or project)."

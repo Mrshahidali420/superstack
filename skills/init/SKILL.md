@@ -23,7 +23,7 @@ Per-project setup. Run it once after the plugin is installed; it makes the loop 
 ## Note
 
 `/ss-init` never installs skills (that is `install.sh`) and never verifies your setup (that is
-[[ss-doctor]]). It only prepares this project's `.superstack/` runtime.
+the planned /ss-doctor). It only prepares this project's `.superstack/` runtime.
 
 ## Lineage
 

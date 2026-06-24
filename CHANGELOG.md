@@ -6,6 +6,8 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-24
+
 ### Added
 - **`/ss-init`:** per-project bootstrap — writes a default `.superstack/config`, ensures `.superstack/`
   is gitignored, and records a genesis ledger entry. Idempotent; `--dry-run` previews, `--force` resets

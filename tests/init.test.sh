@@ -51,6 +51,17 @@ outg="$(cd "$T3" && bash "$ROOT/scripts/ss-init")"
 chk "non-git gitignore skip" 'printf "%s" "$outg" | grep -qF "gitignore: skipped (not a git repo)"'
 chk "non-git config made"    '[ -f "$SUPERSTACK_DIR/config" ]'
 
+# parity: ps1 emits byte-identical output to bash for --dry-run on a fresh repo
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-init.ps1")"; else ps1arg="$ROOT/scripts/ss-init.ps1"; fi
+  T4="$(newrepo)"; export SUPERSTACK_DIR="$T4/.superstack"
+  pb="$(cd "$T4" && bash "$ROOT/scripts/ss-init" --dry-run)"
+  pp="$(cd "$T4" && pwsh -NoProfile -File "$ps1arg" -DryRun | tr -d '\r')"
+  chk "ps1 parity (dry-run)" '[ "$pb" = "$pp" ]'
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "INIT TESTS PASS" || echo "INIT TESTS FAILED"
 exit "$fail"

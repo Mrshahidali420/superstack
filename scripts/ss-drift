@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Detect drift between a plan's declared files and the branch's actual changes (read-only).
+# Usage: ss-drift <plan-file> [base]    Exit: 0 clean, 1 drift, 2 usage/precondition.
+set -uo pipefail
+export LC_ALL=C   # byte-order sort; the ps1 twin uses [StringComparer]::Ordinal to match
+
+plan=""; base="main"; argn=0
+for a in "$@"; do
+  case "$a" in
+    -*) echo "ss-drift: unknown flag '$a' (usage: ss-drift <plan-file> [base])" >&2; exit 2;;
+    *) argn=$((argn+1))
+       case "$argn" in
+         1) plan="$a";;
+         2) base="$a";;
+         *) echo "ss-drift: too many arguments (usage: ss-drift <plan-file> [base])" >&2; exit 2;;
+       esac;;
+  esac
+done
+[ -n "$plan" ] || { echo "ss-drift: missing plan file (usage: ss-drift <plan-file> [base])" >&2; exit 2; }
+[ -f "$plan" ] || { echo "ss-drift: plan file not found: $plan" >&2; exit 2; }
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "ss-drift: not a git repository" >&2; exit 2; }
+git rev-parse --verify --quiet "$base" >/dev/null 2>&1 || { echo "ss-drift: base ref not found: $base" >&2; exit 2; }
+
+tmpd="$(mktemp -d)"; trap 'rm -rf "$tmpd"' EXIT
+
+# declared set: first backtick token from Create/Modify/Test bullets inside **Files:** blocks
+awk '
+  /^\*\*Files:\*\*/ { infiles=1; next }
+  infiles && /^[[:space:]]*$/ { infiles=0; next }
+  infiles && /^(\*\*|### |- \[ \])/ { infiles=0 }
+  infiles && /^- (Create|Modify|Test):/ {
+    if (match($0, /`[^`]+`/)) {
+      p = substr($0, RSTART+1, RLENGTH-2)
+      sub(/:[0-9]+(-[0-9]+)?$/, "", p)
+      print p
+    }
+  }
+' "$plan" | grep . | sort -u > "$tmpd/declared"
+
+# changed set: committed (base...HEAD) + uncommitted (modified + untracked), drop blanks, exclude docs/specs/
+{ git diff --name-only "$base"...HEAD; git diff --name-only HEAD; git ls-files --others --exclude-standard; } 2>/dev/null \
+  | grep . | grep -v '^docs/specs/' | sort -u > "$tmpd/changed"
+
+unplanned="$(comm -13 "$tmpd/declared" "$tmpd/changed")"
+untouched="$(comm -23 "$tmpd/declared" "$tmpd/changed")"
+dcount="$(wc -l < "$tmpd/declared" | tr -d ' ')"
+ccount="$(wc -l < "$tmpd/changed" | tr -d ' ')"
+ucount=0; [ -n "$unplanned" ] && ucount="$(printf '%s\n' "$unplanned" | wc -l | tr -d ' ')"
+tcount=0; [ -n "$untouched" ] && tcount="$(printf '%s\n' "$untouched" | wc -l | tr -d ' ')"
+
+SEP="$(printf -- '-%.0s' {1..54})"
+printf 'ss-drift: plan vs build\n'
+printf '%s\n' "$SEP"
+printf '%-9s %s\n' 'plan:' "$(basename "$plan")"
+printf '%-9s %s\n' 'base:' "$base"
+printf 'declared: %d   changed: %d   unplanned: %d   untouched: %d\n' "$dcount" "$ccount" "$ucount" "$tcount"
+printf '%s\n' "$SEP"
+if [ "$ucount" -gt 0 ]; then
+  printf 'unplanned changes (not in the plan):\n'
+  printf '%s\n' "$unplanned" | sed 's/^/  + /'
+fi
+if [ "$tcount" -gt 0 ]; then
+  printf 'planned but untouched (not yet built / over-declared):\n'
+  printf '%s\n' "$untouched" | sed 's/^/  - /'
+fi
+verdict=CLEAN; [ "$ucount" -gt 0 ] && verdict=DRIFT
+printf 'verdict: %s\n' "$verdict"
+[ "$ucount" -gt 0 ] && exit 1
+exit 0

@@ -1,8 +1,9 @@
 #!/usr/bin/env pwsh
 # SPDX-License-Identifier: MIT
 # Detect ledger patterns; optionally auto-apply low-risk fixes. Usage: ss-evolve.ps1 [-Json] [-NewOnly] [-Apply] [-DryRun]
-param([switch]$Json, [switch]$NewOnly, [switch]$Apply, [switch]$DryRun)
+param([switch]$Json, [switch]$NewOnly, [switch]$Apply, [switch]$DryRun, [switch]$Explore, [string]$Since)
 $ErrorActionPreference = 'Stop'
+if ($Apply -and $Explore) { Write-Error 'ss-evolve: --apply and --explore are mutually exclusive'; exit 1 }
 $dir = if ($env:SUPERSTACK_DIR) { $env:SUPERSTACK_DIR } else { '.superstack' }
 if ($dir -match '^/[a-zA-Z]/') { try { $dir = (& cygpath -w $dir 2>$null).Trim() } catch {} }
 $ledger = Join-Path $dir 'ledger.jsonl'; $config = Join-Path $dir 'config'; $state = Join-Path $dir 'evolve-state'
@@ -13,9 +14,18 @@ if (Test-Path $config) {
   if ($m) { $threshold = [int]$m.Matches.Groups[1].Value }
 }
 
+$cutoff = ''
+if ($Since) {
+  if ($Since -match '^([0-9]+)d$') { $cutoff = [DateTime]::UtcNow.AddDays(-[int]$Matches[1]).ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture) }
+  elseif ($Since -match '^([0-9]+)h$') { $cutoff = [DateTime]::UtcNow.AddHours(-[int]$Matches[1]).ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture) }
+  elseif ($Since -match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$') { $cutoff = "$($Since)T00:00:00Z" }
+  else { Write-Error "ss-evolve: bad -Since '$Since' (want Nd, Nh, or YYYY-MM-DD)"; exit 1 }
+}
+
 $findings = @()
 if (Test-Path $ledger) {
   $all = @(Get-Content $ledger | Where-Object { $_ } | ForEach-Object { $_ | ConvertFrom-Json })
+  if ($cutoff) { $all = @($all | Where-Object { $ts = if ($_.ts -is [datetime]) { $_.ts.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture) } else { [string]$_.ts }; [string]::CompareOrdinal($ts, $cutoff) -ge 0 }) }
   $skips = @($all | Where-Object { $_.event -eq 'skip' } | Group-Object phase | Sort-Object Name | ForEach-Object {
     $notes = @($_.Group | ForEach-Object { $_.note } | Where-Object { $_ })
     $reason = if ($notes.Count) { ($notes | Group-Object | Sort-Object Count, Name -Descending | Select-Object -First 1).Name } else { '' }

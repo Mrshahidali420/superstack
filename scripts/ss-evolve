@@ -5,25 +5,43 @@
 set -uo pipefail
 dir="${SUPERSTACK_DIR:-.superstack}"
 ledger="$dir/ledger.jsonl"; config="$dir/config"; state="$dir/evolve-state"
-json=0; newonly=0; apply=0; dry=0
-for a in "$@"; do
-  case "$a" in
+json=0; newonly=0; apply=0; dry=0; explore=0; since=""
+usage="ss-evolve [--since <window>] [--json] [--new-only] [--apply|--explore] [--dry-run]"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
     --json) json=1;;
     --new-only) newonly=1;;
     --apply) apply=1;;
+    --explore) explore=1;;
     --dry-run) dry=1;;
-    *) echo "ss-evolve: unknown flag '$a' (usage: ss-evolve [--json] [--new-only] [--apply] [--dry-run])" >&2; exit 1;;
+    --since) shift; since="${1:-}"; [ -n "$since" ] || { echo "ss-evolve: --since needs a value (Nd|Nh|YYYY-MM-DD)" >&2; exit 1; };;
+    --since=*) since="${1#--since=}";;
+    *) echo "ss-evolve: unknown flag '$1' (usage: $usage)" >&2; exit 1;;
   esac
+  shift
 done
+[ "$apply" -eq 1 ] && [ "$explore" -eq 1 ] && { echo "ss-evolve: --apply and --explore are mutually exclusive" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "ss-evolve: jq required" >&2; exit 2; }
 
 threshold=3
 [ -f "$config" ] && { v="$(grep -E '^evolve_threshold=' "$config" | tail -1 | cut -d= -f2-)"; [ -n "$v" ] && threshold="$v"; }
 
+cutoff=""
+if [ -n "$since" ]; then
+  case "$since" in
+    [0-9]*d) n="${since%d}"; case "$n" in *[!0-9]*) echo "ss-evolve: bad --since '$since' (want Nd, Nh, or YYYY-MM-DD)" >&2; exit 1;; esac
+             cutoff="$(jq -rn --argjson off "$((n*86400))" 'now - $off | todate')";;
+    [0-9]*h) n="${since%h}"; case "$n" in *[!0-9]*) echo "ss-evolve: bad --since '$since' (want Nd, Nh, or YYYY-MM-DD)" >&2; exit 1;; esac
+             cutoff="$(jq -rn --argjson off "$((n*3600))" 'now - $off | todate')";;
+    [0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]) cutoff="${since}T00:00:00Z";;
+    *) echo "ss-evolve: bad --since '$since' (want Nd, Nh, or YYYY-MM-DD)" >&2; exit 1;;
+  esac
+fi
+
 findings=""
 if [ -f "$ledger" ]; then
-  findings="$(jq -rn --argjson th "$threshold" '
-    [inputs] as $all
+  findings="$(jq -rn --argjson th "$threshold" --arg cutoff "$cutoff" '
+    [inputs | select($cutoff=="" or .ts >= $cutoff)] as $all
     | ( $all | map(select(.event=="skip")) | group_by(.phase) | map(
           { type:"skipped", phase:.[0].phase, count:length,
             reason:( [.[].note] | map(select(. != null and . != "")) | if length==0 then "" else (group_by(.)|max_by(length)|.[0]) end ) } ) ) as $s

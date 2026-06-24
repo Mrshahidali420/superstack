@@ -6,6 +6,15 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-24
+
+### Added
+- `ss-evolve --since <window>` (`Nd` / `Nh` / `YYYY-MM-DD`) restricts detection to a recent
+  slice of the ledger; composes with every other flag.
+- `ss-evolve --explore` scaffolds a draft new-skill proposal into `.superstack/proposals/<name>/`
+  (Tier 2) — never committed; the `/ss-evolve` skill authors the body and a human promotes it.
+  Dedups independently of `--apply` via `.superstack/explore-state`.
+
 ### Changed
 - Repositioned the README, `CLAUDE.md`, and the plugin/marketplace description around SuperStack
   as its own framework — added why-it's-better, a capability comparison, use cases, and benefits;
@@ -52,7 +61,8 @@ All notable changes to SuperStack are documented here. The format follows
 - Cross-platform installers and Claude Code plugin + marketplace manifests.
 - Skill-frontmatter linter (`scripts/lint-skills.sh`), self-test, and CI.
 
-[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Mrshahidali420/superstack/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Mrshahidali420/superstack/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Mrshahidali420/superstack/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Mrshahidali420/superstack/releases/tag/v0.1.0

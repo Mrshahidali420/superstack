@@ -140,7 +140,7 @@ Installs the `/ss-*` skills and agents into `~/.claude/` by default. Pass `--hos
 |---------|------|
 | `/ss-audit` | Verify the mandatory phases actually ran (reads the Loop Ledger) |
 | `/ss-report` | Generate a shareable Markdown summary of how a change was built |
-| `/ss-evolve` | Learn from your ledger; auto-apply low-risk fixes, draft new skills for review |
+| `/ss-evolve` | Learn from your ledger; auto-apply low-risk fixes, draft new skills for review. Now supports `--since <window>` (time-windowed detection) and `--explore` (deterministic draft-skill proposals into `.superstack/proposals/`, never auto-committed). |
 | `/ss-ralph` | Run the loop unattended until a PRD is fully done |
 
 **Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` — run `/ss-help` for the full index (**22 skills, 4 review agents, 2 hooks**).

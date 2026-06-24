@@ -11,6 +11,9 @@ All notable changes to SuperStack are documented here. The format follows
   gitignore, and the ledger, printing a `[OK]`/`[WARN]`/`[FAIL]` checklist with an actionable fix per
   problem; exits 0 (healthy/warnings) or 1 (problems) for CI. The verify leg paired with `/ss-init`.
   bash + PowerShell. (25 skills.)
+- **`/ss-drift`:** read-only plan-vs-build drift detection — compares a plan's declared `**Files:**`
+  against what the branch actually changed (`base...HEAD` + working tree), reporting unplanned changes
+  (scope creep) and planned-but-untouched files; exits 1 on drift for CI. bash + PowerShell. (26 skills.)
 
 ## [0.5.0] - 2026-06-24
 

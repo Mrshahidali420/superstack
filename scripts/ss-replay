@@ -22,6 +22,10 @@ fi
 SEP="------------------------------------------------------"   # 54 dashes
 fmt() { printf '+%dm' "$(( $1 / 60 ))"; }   # whole seconds -> +Nm
 
+# jq joins each row's fields with a literal U+001F (unit separator) char, read back below with
+# IFS=$'\037'. The join arg is that invisible control byte, NOT an empty string. A non-whitespace
+# delimiter is required so EMPTY fields (e.g. the blank marker on enter/note rows) are preserved
+# instead of collapsed. Do not "tidy" it to @tsv / join("") or let an editor strip the control char.
 data=""
 if [ -n "$change" ] && [ -f "$ledger" ]; then
   data="$(jq -rn --arg ch "$change" '
@@ -54,6 +58,7 @@ if [ -z "$change" ] || [ -z "$data" ]; then
 fi
 
 body=""; fphases=0; fretries=0; fskips=0; fopen=0; fspan=0
+# IFS is U+001F (octal 037, non-whitespace) so empty fields are kept (the blank marker survives).
 while IFS=$'\037' read -r tag a b c d e f; do
   case "$tag" in
     R) note="$f"; [ "$e" = "1" ] && note="(retry) $f"

@@ -7,6 +7,8 @@ if ($Apply -and $Explore) { Write-Error 'ss-evolve: --apply and --explore are mu
 $dir = if ($env:SUPERSTACK_DIR) { $env:SUPERSTACK_DIR } else { '.superstack' }
 if ($dir -match '^/[a-zA-Z]/') { try { $dir = (& cygpath -w $dir 2>$null).Trim() } catch {} }
 $ledger = Join-Path $dir 'ledger.jsonl'; $config = Join-Path $dir 'config'; $state = Join-Path $dir 'evolve-state'
+$estate = Join-Path $dir 'explore-state'
+function SeenExplore([string]$id) { (Test-Path $estate) -and (Select-String -Path $estate -Pattern ([regex]::Escape($id)) -SimpleMatch -Quiet) }
 
 $threshold = 3
 if (Test-Path $config) {
@@ -39,7 +41,51 @@ function Seen([string]$id) { (Test-Path $state) -and (Select-String -Path $state
 
 $active = @($findings | Where-Object { -not (($NewOnly -or $Apply) -and (Seen $_.id)) })
 
-if ($Apply) {
+if ($Explore) {
+  $eactive = @($findings | Where-Object { -not (SeenExplore $_.id) })
+  $items = @()
+  foreach ($f in $eactive) {
+    $tw = if ($f.type -eq 'failing') { 'gate' } elseif ($f.type -eq 'skipped') { 'skip' } else { $f.type }
+    $name = ((("ss-$($f.phase)-$tw").ToLower() -replace '[^a-z0-9-]','-') -replace '-+','-').Trim('-')
+    $disp = ".superstack/proposals/$name/SKILL.md"
+    if (-not $DryRun) {
+      $pdir = Join-Path (Join-Path $dir 'proposals') $name
+      New-Item -ItemType Directory -Force -Path $pdir | Out-Null
+      $rc = if ($f.reason) { "; usual reason: ""$($f.reason)""" } else { '' }
+      $desc = "Draft proposal from a recurring $($f.type) pattern in the $($f.phase) phase (seen $($f.count)x). Codify the fix as a reusable skill or close the underlying process gap. Authored by ss-evolve --explore; review and complete before adopting."
+      $lines = @(
+        '---'
+        "name: $name"
+        "description: $desc"
+        '---'
+        "# $name"
+        ''
+        '<!-- DRAFT PROPOSAL - scaffolded by ss-evolve --explore.'
+        '     Review, complete the body, then promote to skills/ to adopt. -->'
+        ''
+        '## Evidence'
+        "- $($f.type) pattern in the ``$($f.phase)`` phase, observed $($f.count)x$rc"
+        '- Source: `.superstack/ledger.jsonl`'
+        ''
+        '## Proposed behavior'
+        '<!-- TODO: the /ss-evolve skill (or a human) authors the skill body here. -->'
+      )
+      Set-Content -Path (Join-Path $pdir 'SKILL.md') -Value ($lines -join "`n") -Encoding utf8
+      New-Item -ItemType Directory -Force -Path $dir | Out-Null
+      Add-Content $estate $f.id
+    }
+    if ($Json) {
+      $items += [pscustomobject]@{ id = $f.id; name = $name; path = $disp; type = $f.type; phase = $f.phase; count = $f.count; reason = $f.reason }
+    } elseif ($DryRun) {
+      Write-Output "[dry-run] proposed $name -> $disp"
+    } else {
+      Write-Output "proposed $name -> $disp (review, then promote to skills/)"
+    }
+  }
+  if ($Json) { Write-Output (@($items) | ConvertTo-Json -Compress -AsArray) }
+  elseif ($eactive.Count -eq 0) { Write-Output "ss-evolve: nothing new to explore" }
+}
+elseif ($Apply) {
   $applied = 0
   foreach ($f in $active) {
     $line = if ($f.type -eq 'skipped') {

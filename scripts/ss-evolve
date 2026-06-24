@@ -54,6 +54,47 @@ fi
 
 seen() { [ -f "$state" ] && grep -qxF "$1" "$state"; }
 
+estate="$dir/explore-state"
+seen_explore() { [ -f "$estate" ] && grep -qxF "$1" "$estate"; }
+
+proposal_name() { # type phase -> ss-<phase>-<typeword>, sanitized to [a-z0-9-]
+  local tw; case "$1" in failing) tw=gate;; skipped) tw=skip;; *) tw="$1";; esac
+  printf 'ss-%s-%s' "$2" "$tw" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | tr -s '-' | sed 's/^-//; s/-$//'
+}
+
+write_proposal() { # name type phase count reason
+  local name="$1" t="$2" p="$3" c="$4" r="$5" pdir
+  pdir="$dir/proposals/$name"; mkdir -p "$pdir"
+  local desc="Draft proposal from a recurring $t pattern in the $p phase (seen ${c}x). Codify the fix as a reusable skill or close the underlying process gap. Authored by ss-evolve --explore; review and complete before adopting."
+  {
+    printf -- '---\n'
+    printf 'name: %s\n' "$name"
+    printf 'description: %s\n' "$desc"
+    printf -- '---\n'
+    printf '# %s\n\n' "$name"
+    printf -- '<!-- DRAFT PROPOSAL - scaffolded by ss-evolve --explore.\n'
+    printf '     Review, complete the body, then promote to skills/ to adopt. -->\n\n'
+    printf -- '## Evidence\n'
+    printf -- '- %s pattern in the `%s` phase, observed %sx%s\n' "$t" "$p" "$c" "${r:+; usual reason: \"$r\"}"
+    printf -- '- Source: `.superstack/ledger.jsonl`\n\n'
+    printf -- '## Proposed behavior\n'
+    printf -- '<!-- TODO: the /ss-evolve skill (or a human) authors the skill body here. -->\n'
+  } > "$pdir/SKILL.md"
+}
+
+explore_one() { # type phase count reason
+  local t="$1" p="$2" c="$3" r="$4" id="$1:$2" name disp
+  name="$(proposal_name "$t" "$p")"; disp=".superstack/proposals/$name/SKILL.md"
+  if [ "$dry" -eq 0 ]; then write_proposal "$name" "$t" "$p" "$c" "$r"; mkdir -p "$dir"; printf '%s\n' "$id" >> "$estate"; fi
+  if [ "$json" -eq 1 ]; then
+    items="${items:+$items,}$(jq -cn --arg id "$id" --arg name "$name" --arg path "$disp" --arg t "$t" --arg p "$p" --argjson c "$c" --arg r "$r" '{id:$id,name:$name,path:$path,type:$t,phase:$p,count:$c,reason:$r}')"
+  elif [ "$dry" -eq 1 ]; then
+    echo "[dry-run] proposed $name -> $disp"
+  else
+    echo "proposed $name -> $disp (review, then promote to skills/)"
+  fi
+}
+
 apply_one() { # type phase count reason
   local id="$1:$2" line
   case "$1" in
@@ -75,6 +116,10 @@ items=""; n=0
 while IFS=$'\t' read -r t p c r; do
   [ -n "$t" ] || continue
   id="$t:$p"
+  if [ "$explore" -eq 1 ]; then
+    seen_explore "$id" && continue
+    n=$((n + 1)); explore_one "$t" "$p" "$c" "$r"; continue
+  fi
   { [ "$newonly" -eq 1 ] || [ "$apply" -eq 1 ]; } && seen "$id" && continue
   n=$((n + 1))
   if [ "$apply" -eq 1 ]; then
@@ -88,8 +133,10 @@ done <<EOF
 $findings
 EOF
 
-if [ "$apply" -eq 0 ] && [ "$json" -eq 1 ]; then printf '[%s]\n' "$items"
-elif [ "$apply" -eq 0 ] && [ "$n" -eq 0 ]; then echo "ss-evolve: no patterns at or above threshold $threshold"
+if [ "$explore" -eq 1 ] && [ "$json" -eq 1 ]; then printf '[%s]\n' "$items"
+elif [ "$explore" -eq 1 ] && [ "$n" -eq 0 ]; then echo "ss-evolve: nothing new to explore"
+elif [ "$apply" -eq 0 ] && [ "$explore" -eq 0 ] && [ "$json" -eq 1 ]; then printf '[%s]\n' "$items"
+elif [ "$apply" -eq 0 ] && [ "$explore" -eq 0 ] && [ "$n" -eq 0 ]; then echo "ss-evolve: no patterns at or above threshold $threshold"
 elif [ "$apply" -eq 1 ] && [ "$n" -eq 0 ]; then echo "ss-evolve: nothing new to apply"
 fi
 exit 0

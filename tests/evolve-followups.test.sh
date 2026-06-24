@@ -41,6 +41,48 @@ else
   echo "  SKIP since parity (pwsh not installed)"
 fi
 
+# --- mutual exclusion ---
+chk "apply+explore mutually exclusive" '! bash "$ROOT/scripts/ss-evolve" --apply --explore >/dev/null 2>&1'
+
+# --- --explore scaffolds proposals (never commits) ---
+before="$(git rev-parse HEAD)"
+xout="$(bash "$ROOT/scripts/ss-evolve" --explore)"
+sk="$SUPERSTACK_DIR/proposals/ss-review-gate/SKILL.md"
+chk "explore scaffolds file" '[ -f "$sk" ]'
+chk "explore name equals dir" 'grep -qxF "name: ss-review-gate" "$sk"'
+chk "explore exactly one h1" '[ "$(grep -c "^# " "$sk")" -eq 1 ]'
+chk "explore embeds evidence" 'grep -qF "failing pattern in the \`review\` phase, observed 3x" "$sk"'
+chk "explore desc length 40-500" 'd="$(sed -n "s/^description: //p" "$sk")"; [ "${#d}" -ge 40 ] && [ "${#d}" -le 500 ]'
+chk "explore prints path" 'printf "%s" "$xout" | grep -qF "proposed ss-review-gate -> .superstack/proposals/ss-review-gate/SKILL.md (review, then promote to skills/)"'
+chk "explore records state" 'grep -qxF "failing:review" "$SUPERSTACK_DIR/explore-state"'
+chk "explore makes no commit" '[ "$(git rev-parse HEAD)" = "$before" ]'
+
+# --- tier independence: apply does not suppress explore (already recorded above), and vice-versa ---
+chk "explore independent of evolve-state" '[ ! -f "$SUPERSTACK_DIR/evolve-state" ] || true; grep -qxF "failing:review" "$SUPERSTACK_DIR/explore-state"'
+
+# --- dedup: second explore finds nothing new ---
+x2="$(bash "$ROOT/scripts/ss-evolve" --explore)"
+chk "explore dedup human" 'printf "%s" "$x2" | grep -qF "nothing new to explore"'
+chk "explore dedup json" '[ "$(bash "$ROOT/scripts/ss-evolve" --explore --json)" = "[]" ]'
+
+# --- dry-run: prints intent, writes nothing ---
+rm -rf "$SUPERSTACK_DIR/proposals" "$SUPERSTACK_DIR/explore-state"
+xd="$(bash "$ROOT/scripts/ss-evolve" --explore --dry-run)"
+chk "explore dryrun prints" 'printf "%s" "$xd" | grep -qF "[dry-run] proposed ss-review-gate -> .superstack/proposals/ss-review-gate/SKILL.md"'
+chk "explore dryrun no file" '[ ! -e "$SUPERSTACK_DIR/proposals" ]'
+chk "explore dryrun no state" '[ ! -f "$SUPERSTACK_DIR/explore-state" ]'
+
+# --- parity: --explore --dry-run (no writes) byte-identical ---
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg2="$(cygpath -w "$ROOT/scripts/ss-evolve.ps1")"; else ps1arg2="$ROOT/scripts/ss-evolve.ps1"; fi
+  rm -f "$SUPERSTACK_DIR/explore-state"
+  xb="$(bash "$ROOT/scripts/ss-evolve" --explore --dry-run)"
+  xp="$(pwsh -NoProfile -File "$ps1arg2" -Explore -DryRun | tr -d '\r')"
+  chk "explore parity" '[ "$xb" = "$xp" ]'
+else
+  echo "  SKIP explore parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "EVOLVE-FOLLOWUPS TESTS PASS" || echo "EVOLVE-FOLLOWUPS TESTS FAILED"
 exit "$fail"

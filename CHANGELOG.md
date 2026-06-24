@@ -6,6 +6,12 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **`/ss-doctor`:** read-only project health check — verifies `jq`, `git`, `.superstack/config`,
+  gitignore, and the ledger, printing a `[OK]`/`[WARN]`/`[FAIL]` checklist with an actionable fix per
+  problem; exits 0 (healthy/warnings) or 1 (problems) for CI. The verify leg paired with `/ss-init`.
+  bash + PowerShell. (25 skills.)
+
 ## [0.5.0] - 2026-06-24
 
 ### Added

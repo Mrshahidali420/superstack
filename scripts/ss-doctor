@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Read-only health check of a project's SuperStack runtime.
+# Exit 0 = healthy/warnings, 1 = problems, 2 = usage error.
+# Usage: ss-doctor
+set -uo pipefail
+[ "$#" -eq 0 ] || { echo "ss-doctor: unexpected argument '$1' (usage: ss-doctor)" >&2; exit 2; }
+
+dir="${SUPERSTACK_DIR:-.superstack}"
+config="$dir/config"; ledger="$dir/ledger.jsonl"
+ok=0; warn=0; fail=0
+
+emit() { # emit STATUS LABEL DETAIL
+  case "$1" in OK) ok=$((ok+1));; WARN) warn=$((warn+1));; FAIL) fail=$((fail+1));; esac
+  printf '  %-6s %-10s %s\n' "[$1]" "$2" "$3"
+}
+
+SEP="$(printf -- '-%.0s' {1..54})"
+printf 'ss-doctor: SuperStack project health (.superstack/)\n'
+printf '%s\n' "$SEP"
+
+# 1. jq -------------------------------------------------------------
+if command -v jq >/dev/null 2>&1; then
+  ver="$(jq --version 2>/dev/null)"
+  emit OK jq "${ver:-jq} on PATH"
+else
+  emit FAIL jq "not found -> install jq (needed by audit/report/replay/evolve)"
+fi
+
+# 2. git ------------------------------------------------------------
+in_repo=0; root=""
+if command -v git >/dev/null 2>&1; then
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    br="$(git branch --show-current 2>/dev/null)"; [ -n "$br" ] || br="detached"
+    emit OK git "git repo (branch: $br)"
+    in_repo=1; root="$(git rev-parse --show-toplevel 2>/dev/null)"
+  else
+    emit WARN git "not a git repo -> ledger change will be \"default\"; gitignore check skipped"
+  fi
+else
+  emit WARN git "git not on PATH -> branch detection degrades (change=default)"
+fi
+
+# 3. config ---------------------------------------------------------
+if [ -f "$config" ]; then
+  mp="$(grep '^mandatory_phases=' "$config" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '\r')"
+  et="$(grep '^evolve_threshold=' "$config" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '\r')"
+  problem=""
+  valid_phases=" frame plan build review qa secure ship learn "
+  if [ -n "$mp" ]; then
+    for p in $(printf '%s' "$mp" | tr ',' ' '); do
+      case "$valid_phases" in *" $p "*) ;; *) problem="unknown phase \"$p\" in mandatory_phases"; break;; esac
+    done
+  fi
+  if [ -z "$problem" ] && [ -n "$et" ]; then
+    case "$et" in
+      *[!0-9]*) problem="evolve_threshold \"$et\" not a positive integer";;
+      *) [ "$et" -ge 1 ] 2>/dev/null || problem="evolve_threshold \"$et\" not a positive integer";;
+    esac
+  fi
+  if [ -n "$problem" ]; then emit WARN config "$problem -> edit .superstack/config"
+  else emit OK config "mandatory_phases=${mp:-review,secure}  evolve_threshold=${et:-3}"
+  fi
+else
+  emit WARN config ".superstack/config missing -> run /ss-init"
+fi
+
+# 4. gitignore ------------------------------------------------------
+if [ "$in_repo" -eq 1 ]; then
+  gif="$root/.gitignore"
+  if [ -f "$gif" ] && tr -d '\r' < "$gif" | grep -qxF -e '.superstack/' -e '.superstack'; then
+    emit OK gitignore ".superstack/ is gitignored"
+  else
+    emit WARN gitignore ".superstack/ not gitignored -> run /ss-init"
+  fi
+else
+  emit OK gitignore "n/a (not a git repo)"
+fi
+
+# 5. ledger ---------------------------------------------------------
+if [ -f "$ledger" ]; then
+  total="$(awk 'NF{n++} END{print n+0}' "$ledger")"
+  bad="$(awk 'NF && $0 !~ /^\{.*\}$/{c++} END{print c+0}' "$ledger")"
+  if [ "$total" -eq 0 ]; then emit WARN ledger "ledger is empty -> run /ss-init or start the loop"
+  elif [ "$bad" -gt 0 ]; then emit FAIL ledger "$bad of $total lines malformed -> inspect .superstack/ledger.jsonl"
+  else emit OK ledger "$total entries, all well-formed"
+  fi
+else
+  emit WARN ledger "no ledger yet -> run /ss-init or start the loop"
+fi
+
+# footer ------------------------------------------------------------
+printf '%s\n' "$SEP"
+verdict=HEALTHY
+[ "$warn" -gt 0 ] && verdict=WARNINGS
+[ "$fail" -gt 0 ] && verdict=PROBLEMS
+printf 'ok: %d   warnings: %d   problems: %d   verdict: %s\n' "$ok" "$warn" "$fail" "$verdict"
+[ "$fail" -gt 0 ] && exit 1
+exit 0

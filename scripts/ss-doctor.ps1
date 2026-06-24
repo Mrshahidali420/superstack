@@ -51,7 +51,7 @@ if (Test-Path $config) {
   $problem = ''
   $valid = @('frame','plan','build','review','qa','secure','ship','learn')
   if ($mp) { foreach ($p in ($mp -split ',')) { if ($p -and ($valid -notcontains $p)) { $problem = "unknown phase ""$p"" in mandatory_phases"; break } } }
-  if (-not $problem -and $et) { if ($et -notmatch '^[0-9]+$' -or [int]$et -lt 1) { $problem = "evolve_threshold ""$et"" not a positive integer" } }
+  if (-not $problem -and $et) { if ($et -notmatch '^0*[1-9][0-9]*$') { $problem = "evolve_threshold ""$et"" not a positive integer" } }
   if ($problem) { Emit WARN config "$problem -> edit .superstack/config" }
   else {
     $mpShow = if ($mp) { $mp } else { 'review,secure' }

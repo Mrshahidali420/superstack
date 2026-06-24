@@ -47,6 +47,21 @@ printf 'mandatory_phases=review,secure\nevolve_threshold=x\n' > "$SUPERSTACK_DIR
 out4b="$(cd "$T4" && bash "$ROOT/scripts/ss-doctor")"
 chk "invalid threshold WARN" 'printf "%s" "$out4b" | grep -qE "evolve_threshold .x. not a positive integer"'
 
+# --- large evolve_threshold (> Int32.MaxValue): valid, must not crash either twin (regression: C1) ---
+T8="$(newrepo)"; export SUPERSTACK_DIR="$T8/.superstack"
+mkdir -p "$SUPERSTACK_DIR"
+printf 'mandatory_phases=review,secure\nevolve_threshold=9999999999\n' > "$SUPERSTACK_DIR/config"
+out8="$(cd "$T8" && bash "$ROOT/scripts/ss-doctor")"; rc8=$?
+chk "huge threshold OK (bash)"  'printf "%s" "$out8" | grep -qE "\[OK\] +config +mandatory_phases=review,secure  evolve_threshold=9999999999"'
+chk "huge threshold exit 0"     '[ "$rc8" -eq 0 ]'
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1b="$(cygpath -w "$ROOT/scripts/ss-doctor.ps1")"; else ps1b="$ROOT/scripts/ss-doctor.ps1"; fi
+  pp8="$(cd "$T8" && pwsh -NoProfile -File "$ps1b" | tr -d '\r')"
+  chk "huge threshold parity"   '[ "$out8" = "$pp8" ]'
+else
+  echo "  SKIP huge threshold parity (pwsh not installed)"
+fi
+
 # --- jq-free resilience: curated PATH without jq (guarded by symlink capability) ---
 probe="$(mktemp -d)"
 if ln -s "$(command -v awk)" "$probe/awk" 2>/dev/null; then

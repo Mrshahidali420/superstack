@@ -37,7 +37,7 @@ if [ -z "$root" ]; then
   gi="skipped (not a git repo)"
 else
   gif="$root/.gitignore"
-  if [ -f "$gif" ] && { grep -qxF '.superstack/' "$gif" || grep -qxF '.superstack' "$gif"; }; then
+  if [ -f "$gif" ] && tr -d '\r' < "$gif" | grep -qxF -e '.superstack/' -e '.superstack'; then
     gi="already ignored"
   elif [ "$dry" -eq 1 ]; then
     gi="[dry-run] would add .superstack/ to .gitignore"

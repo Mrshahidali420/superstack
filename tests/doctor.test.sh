@@ -71,6 +71,18 @@ out6="$(cd "$T6" && bash "$ROOT/scripts/ss-doctor")"
 chk "non-git git WARN"      'printf "%s" "$out6" | grep -qE "\[WARN\] +git +not a git repo"'
 chk "non-git gitignore na"  'printf "%s" "$out6" | grep -qE "\[OK\] +gitignore +n/a"'
 
+# parity: ss-doctor is read-only, so compare a real run on the same healthy fixture
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-doctor.ps1")"; else ps1arg="$ROOT/scripts/ss-doctor.ps1"; fi
+  T7="$(newrepo)"; export SUPERSTACK_DIR="$T7/.superstack"
+  ( cd "$T7" && bash "$ROOT/scripts/ss-init" >/dev/null )
+  pb="$(cd "$T7" && bash "$ROOT/scripts/ss-doctor")"
+  pp="$(cd "$T7" && pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
+  chk "ps1 parity (healthy)" '[ "$pb" = "$pp" ]'
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "DOCTOR TESTS PASS" || echo "DOCTOR TESTS FAILED"
 exit "$fail"

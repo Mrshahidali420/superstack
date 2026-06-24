@@ -65,6 +65,27 @@ chk "save writes file" '[ -f "$SUPERSTACK_DIR/replays/feat-d.md" ]'
 chk "save is fenced" 'head -1 "$SUPERSTACK_DIR/replays/feat-d.md" | grep -qF "\`\`\`"'
 chk "save reports path" 'printf "%s" "$serr" | grep -qF "saved -> .superstack/replays/feat-d.md"'
 
+# parity: ps1 emits byte-identical output to bash (guarded for CI without pwsh)
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-replay.ps1")"; else ps1arg="$ROOT/scripts/ss-replay.ps1"; fi
+  cat > "$SUPERSTACK_DIR/ledger.jsonl" <<'JSONL'
+{"ts":"2026-06-21T09:00:00Z","change":"feat/b","phase":"frame","event":"enter","status":"na","note":""}
+{"ts":"2026-06-21T09:29:00Z","change":"feat/b","phase":"build","event":"enter","status":"na","note":""}
+{"ts":"2026-06-21T09:56:00Z","change":"feat/b","phase":"review","event":"gate","status":"fail","note":"2 findings"}
+{"ts":"2026-06-21T10:08:00Z","change":"feat/b","phase":"review","event":"gate","status":"pass","note":"fixed"}
+{"ts":"2026-06-21T10:10:00Z","change":"feat/b","phase":"ship","event":"gate","status":"pass","note":"CI green"}
+{"ts":"2026-06-21T10:10:00Z","change":"feat/b","phase":"secure","event":"skip","status":"skip","note":"no IO"}
+JSONL
+  rb="$(bash "$ROOT/scripts/ss-replay" feat/b)"
+  rp="$(pwsh -NoProfile -File "$ps1arg" feat/b | tr -d '\r')"
+  chk "ps1 parity (explicit)" '[ "$rb" = "$rp" ]'
+  db="$(bash "$ROOT/scripts/ss-replay")"
+  dp="$(pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
+  chk "ps1 parity (default latest)" '[ "$db" = "$dp" ]'
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "REPLAY TESTS PASS" || echo "REPLAY TESTS FAILED"
 exit "$fail"

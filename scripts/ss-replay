@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Replay one loop run from the ledger as a chronological timeline (the "story" leg).
+# Usage: ss-replay [change] [--save]
+set -uo pipefail
+dir="${SUPERSTACK_DIR:-.superstack}"
+ledger="$dir/ledger.jsonl"
+save=0; change=""; explicit=0
+for a in "$@"; do
+  case "$a" in
+    --save) save=1;;
+    -*) echo "ss-replay: unknown flag '$a' (usage: ss-replay [change] [--save])" >&2; exit 1;;
+    *) change="$a"; explicit=1;;
+  esac
+done
+command -v jq >/dev/null 2>&1 || { echo "ss-replay: jq required" >&2; exit 2; }
+
+if [ "$explicit" -eq 0 ] && [ -f "$ledger" ]; then
+  change="$(jq -rn '[inputs][-1].change // empty' < "$ledger" | tr -d '\r')"
+fi
+
+SEP="------------------------------------------------------"   # 54 dashes
+fmt() { printf '+%dm' "$(( $1 / 60 ))"; }   # whole seconds -> +Nm
+
+data=""
+if [ -n "$change" ] && [ -f "$ledger" ]; then
+  data="$(jq -rn --arg ch "$change" '
+    [inputs | select(.change==$ch)] as $rows
+    | ($rows|length) as $n
+    | if $n==0 then empty else
+      ($rows[0].ts|fromdateiso8601) as $t0
+      | ( range(0;$n) as $i
+          | $rows[$i] as $r
+          | (($r.ts|fromdateiso8601)-$t0|floor) as $el
+          | (if ($r.status=="na" or $r.status==null) then "" else ($r.status|ascii_upcase) end) as $mk
+          | ( ($r.event=="gate" and $r.status=="pass")
+              and ([$rows[0:$i][]|select(.phase==$r.phase and .event=="gate" and .status=="fail")]|length>0) ) as $rt
+          | ["R",($el|tostring),$r.phase,$r.event,$mk,(if $rt then "1" else "0" end),($r.note//"")]|@tsv ),
+        ( ($rows|map(.phase)|unique|length) as $phases
+          | ([range(0;$n) as $j | $rows[$j] as $g
+              | select($g.event=="gate" and $g.status=="pass")
+              | select([$rows[0:$j][]|select(.phase==$g.phase and .event=="gate" and .status=="fail")]|length>0)]|length) as $retries
+          | ([$rows[]|select(.event=="skip")]|length) as $skips
+          | ([$rows|group_by(.phase)[]|map(select(.event=="gate"))|select(length>0)|last|select(.status=="fail")]|length) as $openfails
+          | (($rows[-1].ts|fromdateiso8601)-$t0|floor) as $span
+          | ["F",($phases|tostring),($retries|tostring),($skips|tostring),($openfails|tostring),($span|tostring)]|@tsv )
+      end
+  ' < "$ledger" | tr -d '\r')"
+fi
+
+if [ -z "$change" ] || [ -z "$data" ]; then
+  if [ "$explicit" -eq 1 ]; then echo "ss-replay: no run found for $change"; else echo "ss-replay: no run to replay"; fi
+  exit 0
+fi
+
+body=""; fphases=0; fretries=0; fskips=0; fopen=0; fspan=0
+while IFS=$'\t' read -r tag a b c d e f; do
+  case "$tag" in
+    R) note="$f"; [ "$e" = "1" ] && note="(retry) $f"
+       line="$(printf '%6s  %-7s %-5s %-4s %s' "$(fmt "$a")" "$b" "$c" "$d" "$note" | sed 's/[[:space:]]*$//')"
+       body="${body}${line}"$'\n' ;;
+    F) fphases="$a"; fretries="$b"; fskips="$c"; fopen="$d"; fspan="$e" ;;
+  esac
+done <<EOF
+$data
+EOF
+
+total="$(fmt "$fspan")"; total="${total#+}"
+render() {
+  printf '%s\n%s\n' "loop replay: $change" "$SEP"
+  printf '%s' "$body"
+  printf '%s\n' "$SEP"
+  printf 'phases: %s   gate-retries: %s   skips: %s   open-fails: %s   total: ~%s\n' "$fphases" "$fretries" "$fskips" "$fopen" "$total"
+}
+output="$(render)"
+printf '%s\n' "$output"
+if [ "$save" -eq 1 ]; then
+  mkdir -p "$dir/replays"
+  { printf '```\n'; printf '%s\n' "$output"; printf '```\n'; } > "$dir/replays/${change//\//-}.md"
+  echo "saved -> .superstack/replays/${change//\//-}.md" >&2
+fi

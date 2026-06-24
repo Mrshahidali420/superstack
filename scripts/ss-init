@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Bootstrap a project's SuperStack runtime (config, gitignore, genesis ledger entry). Idempotent.
+# Usage: ss-init [--force] [--dry-run]
+set -uo pipefail
+dir="${SUPERSTACK_DIR:-.superstack}"
+config="$dir/config"; ledger="$dir/ledger.jsonl"
+force=0; dry=0
+for a in "$@"; do
+  case "$a" in
+    --force) force=1;;
+    --dry-run) dry=1;;
+    *) echo "ss-init: unknown flag '$a' (usage: ss-init [--force] [--dry-run])" >&2; exit 1;;
+  esac
+done
+
+CONFIG_BODY='# SuperStack project config (key=value). Delete a line to use the built-in default.
+mandatory_phases=review,secure
+evolve_threshold=3'
+
+wrote=0
+
+# config -------------------------------------------------------------
+if [ ! -f "$config" ]; then
+  if [ "$dry" -eq 1 ]; then cfg="[dry-run] would create .superstack/config"
+  else mkdir -p "$dir"; printf '%s\n' "$CONFIG_BODY" > "$config"; cfg="created (.superstack/config)"; wrote=1; fi
+elif [ "$force" -eq 1 ]; then
+  if [ "$dry" -eq 1 ]; then cfg="[dry-run] would reset .superstack/config"
+  else printf '%s\n' "$CONFIG_BODY" > "$config"; cfg="reset (.superstack/config)"; wrote=1; fi
+else
+  cfg="already present (use --force to reset)"
+fi
+
+# gitignore ----------------------------------------------------------
+root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "$root" ]; then
+  gi="skipped (not a git repo)"
+else
+  gif="$root/.gitignore"
+  if [ -f "$gif" ] && { grep -qxF '.superstack/' "$gif" || grep -qxF '.superstack' "$gif"; }; then
+    gi="already ignored"
+  elif [ "$dry" -eq 1 ]; then
+    gi="[dry-run] would add .superstack/ to .gitignore"
+  else
+    # append, ensuring a separating newline if the file lacks a trailing one
+    { [ -s "$gif" ] && [ -n "$(tail -c1 "$gif" 2>/dev/null)" ] && printf '\n'; printf '.superstack/\n'; } >> "$gif"
+    gi="added .superstack/ to .gitignore"; wrote=1
+  fi
+fi
+
+# ledger genesis -----------------------------------------------------
+if [ ! -f "$ledger" ]; then
+  if [ "$dry" -eq 1 ]; then lg="[dry-run] would write a genesis entry"
+  else
+    sib="$(cd "$(dirname "$0")" && pwd)/ledger"
+    if [ -f "$sib" ]; then bash "$sib" init note na "superstack loop initialized" >/dev/null 2>&1; lg="created (genesis entry)"; wrote=1
+    else lg="skipped (ledger script missing)"; fi
+  fi
+else
+  lg="already present"
+fi
+
+# report -------------------------------------------------------------
+printf 'ss-init: SuperStack project setup (.superstack/)\n'
+printf '  %-10s %s\n' "config:" "$cfg"
+printf '  %-10s %s\n' "gitignore:" "$gi"
+printf '  %-10s %s\n' "ledger:" "$lg"
+if [ "$dry" -eq 1 ]; then printf '%s\n' "[dry-run] no changes written."
+elif [ "$wrote" -eq 1 ]; then printf '%s\n' "ready - run /ss-frame to start the loop (see CLAUDE.md)."
+else printf '%s\n' "already initialized."
+fi
+exit 0

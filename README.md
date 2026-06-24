@@ -6,7 +6,7 @@
 
 Frame → Plan → Build → Review → QA → Secure → Ship → Learn
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) ![status v0.4.0](https://img.shields.io/badge/release-v0.4.0-brightgreen.svg) ![skills 22](https://img.shields.io/badge/skills-22-7c3aed.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.4.0](https://img.shields.io/badge/release-v0.4.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 22](https://img.shields.io/badge/skills-22-7c3aed.svg)
 
 Built for Claude Code; portable to any skill-aware agent.
 
@@ -201,6 +201,8 @@ SuperStack is original work, but it stands on the shoulders of excellent MIT-lic
 ---
 
 <div align="center">
+
+[Changelog](CHANGELOG.md) · [Releases](https://github.com/Mrshahidali420/superstack/releases)
 
 MIT licensed. Fork it, make it yours. Built by [@Mrshahidali420](https://github.com/Mrshahidali420).
 

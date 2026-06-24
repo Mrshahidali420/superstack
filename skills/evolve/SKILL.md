@@ -15,21 +15,29 @@ Closes the loop: the ledger records what happened; `/ss-evolve` acts on it.
    then decide:
    - **Low-risk insight** (a convention or gotcha): author a tailored `CONTEXT.md` entry (richer
      than the built-in template), append it, and commit as `chore(evolve): <summary>`.
-   - **A new skill is warranted** (a recurring multi-step fix worth codifying): write the full
-     draft to `.superstack/proposals/<name>/SKILL.md` and validate its frontmatter (name `ss-*`,
-     a `Use ...` description 40-500 chars, exactly one H1). Do NOT commit it - announce its path
-     for the human to move into `skills/`.
+   - **A new skill is warranted** (a recurring multi-step fix worth codifying): run
+     `scripts/ss-evolve --explore` to deterministically scaffold a valid stub at
+     `.superstack/proposals/<name>/SKILL.md` (frontmatter + ledger evidence + a `<!-- TODO -->`
+     body). Then author the `## Proposed behavior` body in that stub — a real, tailored skill
+     per writing conventions (name `ss-*`, a `Use ...` description 40-500 chars, exactly one H1).
+     Do NOT commit it - announce its path for the human to move into `skills/`.
 3. After each change: record the finding id in `.superstack/evolve-state` and log
    `ledger evolve note na "<what happened>"`.
 4. Announce what was auto-applied (with the `chore(evolve):` commits and how to `git revert`
    them) and what was proposed (with paths). If asked for a dry run, draft and show everything
    but apply nothing.
+5. Scope to a recent window when the ledger is long: `scripts/ss-evolve --since 7d` (also `24h`
+   or an absolute `YYYY-MM-DD`) filters detection to that slice. Composes with `--json`,
+   `--new-only`, `--apply`, and `--explore`.
 
 ## Note
 
 New skills are never auto-committed - they steer future agents, so they always go to
 `.superstack/proposals/` for your review. Only documentation and config insights auto-apply.
-`scripts/ss-evolve --apply` is the deterministic, no-LLM version (templated CONTEXT.md entries).
+Two deterministic, no-LLM script paths back this: `scripts/ss-evolve --apply` writes templated
+`CONTEXT.md` entries (Tier 1, auto-commit), and `scripts/ss-evolve --explore` scaffolds proposal
+stubs into `.superstack/proposals/` (Tier 2, never committed). They dedup independently
+(`evolve-state` vs `explore-state`), so the same finding can be both documented and proposed.
 
 ## Lineage
 

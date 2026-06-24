@@ -148,10 +148,6 @@ Then run `/ss-init` once in your project to set up `.superstack/`, and `/ss-fram
 
 **Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` — run `/ss-help` for the full index (**24 skills, 4 review agents, 2 hooks**).
 
-| Command | Does |
-|---------|------|
-| `/ss-init` | Bootstrap a project for the loop — config, gitignore, genesis ledger entry (idempotent) |
-
 ---
 
 ## Under the hood

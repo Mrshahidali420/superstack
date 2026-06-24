@@ -6,7 +6,7 @@
 
 Frame → Plan → Build → Review → QA → Secure → Ship → Learn
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.4.0](https://img.shields.io/badge/release-v0.4.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 23](https://img.shields.io/badge/skills-23-7c3aed.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.4.0](https://img.shields.io/badge/release-v0.4.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 24](https://img.shields.io/badge/skills-24-7c3aed.svg)
 
 Built for Claude Code; portable to any skill-aware agent.
 
@@ -117,6 +117,8 @@ git clone https://github.com/Mrshahidali420/superstack "$HOME\.superstack"; & "$
 
 Installs the `/ss-*` skills and agents into `~/.claude/` by default. Pass `--host codex|cursor|opencode|factory|kiro` (or `-Agent` on Windows), or `--all`, to target other agents. Then merge `CLAUDE.md` into your global or project config to adopt the loop.
 
+Then run `/ss-init` once in your project to set up `.superstack/`, and `/ss-frame` to start the loop.
+
 ---
 
 ## Commands
@@ -144,7 +146,11 @@ Installs the `/ss-*` skills and agents into `~/.claude/` by default. Pass `--hos
 | `/ss-evolve` | Learn from your ledger; auto-apply low-risk fixes, draft new skills for review. Now supports `--since <window>` (time-windowed detection) and `--explore` (deterministic draft-skill proposals into `.superstack/proposals/`, never auto-committed). |
 | `/ss-ralph` | Run the loop unattended until a PRD is fully done |
 
-**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` — run `/ss-help` for the full index (**23 skills, 4 review agents, 2 hooks**).
+**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` — run `/ss-help` for the full index (**24 skills, 4 review agents, 2 hooks**).
+
+| Command | Does |
+|---------|------|
+| `/ss-init` | Bootstrap a project for the loop — config, gitignore, genesis ledger entry (idempotent) |
 
 ---
 

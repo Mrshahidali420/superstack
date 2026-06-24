@@ -7,10 +7,13 @@ All notable changes to SuperStack are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- **`/ss-init`:** per-project bootstrap — writes a default `.superstack/config`, ensures `.superstack/`
+  is gitignored, and records a genesis ledger entry. Idempotent; `--dry-run` previews, `--force` resets
+  the config. bash + PowerShell. (24 skills.)
 - **`/ss-replay`:** replays a loop run from the ledger as a chronological ASCII timeline
   (elapsed time, phase, event, `PASS`/`FAIL`/`SKIP`, `(retry)` tags) with a footer of story
   stats; `--save` writes a shareable fenced Markdown file to `.superstack/replays/`. The "story"
-  leg of the proof trio (audit=gate, report=stats, replay=story). bash + PowerShell. (23 skills.)
+  leg of the proof trio (audit=gate, report=stats, replay=story). bash + PowerShell. (24 skills.)
 
 ## [0.4.0] - 2026-06-24
 

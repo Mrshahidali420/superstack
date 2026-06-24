@@ -35,7 +35,7 @@ if [ -n "$change" ] && [ -f "$ledger" ]; then
           | (if ($r.status=="na" or $r.status==null) then "" else ($r.status|ascii_upcase) end) as $mk
           | ( ($r.event=="gate" and $r.status=="pass")
               and ([$rows[0:$i][]|select(.phase==$r.phase and .event=="gate" and .status=="fail")]|length>0) ) as $rt
-          | ["R",($el|tostring),$r.phase,$r.event,$mk,(if $rt then "1" else "0" end),($r.note//"")]|@tsv ),
+          | ["R",($el|tostring),$r.phase,$r.event,$mk,(if $rt then "1" else "0" end),($r.note//"")]|join("") ),
         ( ($rows|map(.phase)|unique|length) as $phases
           | ([range(0;$n) as $j | $rows[$j] as $g
               | select($g.event=="gate" and $g.status=="pass")
@@ -43,7 +43,7 @@ if [ -n "$change" ] && [ -f "$ledger" ]; then
           | ([$rows[]|select(.event=="skip")]|length) as $skips
           | ([$rows|group_by(.phase)[]|map(select(.event=="gate"))|select(length>0)|last|select(.status=="fail")]|length) as $openfails
           | (($rows[-1].ts|fromdateiso8601)-$t0|floor) as $span
-          | ["F",($phases|tostring),($retries|tostring),($skips|tostring),($openfails|tostring),($span|tostring)]|@tsv )
+          | ["F",($phases|tostring),($retries|tostring),($skips|tostring),($openfails|tostring),($span|tostring)]|join("") )
       end
   ' < "$ledger" | tr -d '\r')"
 fi
@@ -54,7 +54,7 @@ if [ -z "$change" ] || [ -z "$data" ]; then
 fi
 
 body=""; fphases=0; fretries=0; fskips=0; fopen=0; fspan=0
-while IFS=$'\t' read -r tag a b c d e f; do
+while IFS=$'\037' read -r tag a b c d e f; do
   case "$tag" in
     R) note="$f"; [ "$e" = "1" ] && note="(retry) $f"
        line="$(printf '%6s  %-7s %-5s %-4s %s' "$(fmt "$a")" "$b" "$c" "$d" "$note" | sed 's/[[:space:]]*$//')"

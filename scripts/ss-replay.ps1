@@ -35,11 +35,7 @@ foreach ($r in $rows) {
   if ($r.event -eq 'gate' -and $r.status -eq 'fail') { $failed["$($r.phase)"] = $true }
   if ($r.event -eq 'skip') { $skips++ }
   $note = "$($r.note)"; if ($rt) { $note = "(retry) $note" }
-  # Bash IFS=$'\t' collapses consecutive tabs, so when mk="" the retry-bit shifts into the
-  # marker column and the note shifts into the next slot — match that behaviour exactly.
-  $mkCol = if ($mk -eq '') { if ($rt) { '1' } else { '0' } } else { $mk }
-  $noteCol = if ($mk -eq '') { '' } else { $note }
-  $lines += ('{0,6}  {1,-7} {2,-5} {3,-4} {4}' -f (Fmt $el), "$($r.phase)", "$($r.event)", $mkCol, $noteCol).TrimEnd()
+  $lines += ('{0,6}  {1,-7} {2,-5} {3,-4} {4}' -f (Fmt $el), "$($r.phase)", "$($r.event)", $mk, $note).TrimEnd()
 }
 $phases = @($rows | Select-Object -ExpandProperty phase -Unique).Count
 $openfails = 0

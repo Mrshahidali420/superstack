@@ -28,6 +28,9 @@ chk "default excludes older run" '! (printf "%s" "$out" | grep -qF "spec ok")'
 chk "elapsed +0m" 'printf "%s" "$out" | grep -qE "\+0m +frame +enter"'
 chk "elapsed +29m" 'printf "%s" "$out" | grep -qE "\+29m +build +enter"'
 chk "elapsed +68m" 'printf "%s" "$out" | grep -qE "\+68m +review +gate +PASS"'
+# blank marker: enter rows must end at the event token (no stray retry-bit)
+chk "frame enter blank marker" 'printf "%s" "$out" | grep -qE "\+0m +frame +enter *$"'
+chk "build enter blank marker" 'printf "%s" "$out" | grep -qE "\+29m +build +enter *$"'
 # markers
 chk "marker FAIL" 'printf "%s" "$out" | grep -qE "review +gate +FAIL +2 findings"'
 chk "marker SKIP" 'printf "%s" "$out" | grep -qE "secure +skip +SKIP +no IO"'

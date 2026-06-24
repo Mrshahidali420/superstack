@@ -65,6 +65,18 @@ T4c="$(mktemp -d)"; printf '**Files:**\n- Create: `x`\n' > "$T4c/p.md"
 ( cd "$T4c" && bash "$ROOT/scripts/ss-drift" p.md ) >/dev/null 2>&1; rc4c=$?
 chk "not-a-git exit 2" '[ "$rc4c" -eq 2 ]'
 
+# parity: read-only, so compare a real run on a drift fixture with multi-item lists
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-drift.ps1")"; else ps1arg="$ROOT/scripts/ss-drift.ps1"; fi
+  T5="$(mkbase)"; base5="$(cd "$T5" && git rev-parse HEAD)"
+  ( cd "$T5" && mkdir -p scripts tests && printf 'a\n'>scripts/a; printf 'b\n'>scripts/b; printf 'd\n'>scripts/d; printf 'r\n'>README-extra && git add -A && git commit -qm work )
+  pb="$(cd "$T5" && bash "$ROOT/scripts/ss-drift" docs/specs/p-plan.md "$base5")"
+  pp="$(cd "$T5" && pwsh -NoProfile -File "$ps1arg" docs/specs/p-plan.md "$base5" | tr -d '\r')"
+  chk "ps1 parity (drift)" '[ "$pb" = "$pp" ]'
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "DRIFT TESTS PASS" || echo "DRIFT TESTS FAILED"
 exit "$fail"

@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# ss-ctx: read-only access to the PostToolUse shrink store (.superstack/ctx). Front 2a.
+# Usage: ss-ctx {list | show <id> | search <term> | prune [--keep N]}
+set -uo pipefail
+export LC_ALL=C
+dir="${SUPERSTACK_DIR:-.superstack}"; store="$dir/ctx"
+cmd="${1:-}"
+sanitize() { printf '%s' "$1" | tr -c 'A-Za-z0-9_-' '_'; }
+
+case "$cmd" in
+  list)
+    [ -d "$store" ] || { echo "ss-ctx: store empty ($store)"; exit 0; }
+    rows=""; found=0
+    for f in "$store"/*.txt; do
+      [ -e "$f" ] || continue; found=1
+      b="$(wc -c < "$f" | tr -d ' ')"; m="$(date -r "$f" +%s 2>/dev/null || echo 0)"
+      n="$(basename "$f" .txt)"; rows="${rows}${m}|${b}|${n}"$'\n'
+    done
+    [ "$found" = "1" ] || { echo "ss-ctx: store empty ($store)"; exit 0; }
+    printf '%s' "$rows" | sort -t'|' -k1,1nr -k3,3 | while IFS='|' read -r m b n; do
+      [ -n "$n" ] || continue; printf '%-12s %s\n' "$b" "$n"
+    done
+    ;;
+  show)
+    id="$(sanitize "${2:-}")"
+    [ -n "$id" ] && [ -n "${2:-}" ] || { echo "ss-ctx: show needs an id" >&2; exit 2; }
+    f="$store/$id.txt"
+    [ -f "$f" ] || { echo "ss-ctx: no entry '$id'" >&2; exit 1; }
+    cat "$f"
+    ;;
+  search)
+    term="${2:-}"
+    [ -n "$term" ] || { echo "ss-ctx: search needs a term" >&2; exit 2; }
+    [ -d "$store" ] || { echo "ss-ctx: no matches for '$term'"; exit 0; }
+    hit=0
+    for f in "$store"/*.txt; do
+      [ -e "$f" ] || continue; n="$(basename "$f" .txt)"
+      matches="$(grep -nF -- "$term" "$f" 2>/dev/null || true)"
+      [ -n "$matches" ] || continue
+      hit=1; printf '%s\n' "$matches" | while IFS= read -r ln; do printf '%s: %s\n' "$n" "${ln#*:}"; done
+    done
+    [ "$hit" = "1" ] || echo "ss-ctx: no matches for '$term'"
+    ;;
+  prune)
+    keep=50
+    if [ "${2:-}" = "--keep" ]; then keep="${3:-50}"; fi
+    case "$keep" in ''|*[!0-9]*) echo "ss-ctx: --keep needs a number" >&2; exit 2;; esac
+    [ -d "$store" ] || { echo "ss-ctx: store empty"; exit 0; }
+    rows=""; for f in "$store"/*.txt; do [ -e "$f" ] || continue; rows="${rows}$(date -r "$f" +%s 2>/dev/null || echo 0)|${f}"$'\n'; done
+    idx=0
+    printf '%s' "$rows" | sort -t'|' -k1,1nr -k2,2 | while IFS='|' read -r m f; do
+      [ -n "$f" ] || continue; idx=$((idx+1)); [ "$idx" -le "$keep" ] || rm -f "$f"
+    done
+    echo "ss-ctx: kept up to $keep newest"
+    ;;
+  *) echo "usage: ss-ctx {list | show <id> | search <term> | prune [--keep N]}" >&2; exit 2;;
+esac

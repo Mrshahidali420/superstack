@@ -46,6 +46,26 @@ else
   chk "1-line blob bounded"    'printf "%s" "$o7" | jq -e . >/dev/null && [ "$(printf "%s" "$o7" | jq -r ".hookSpecificOutput.updatedToolOutput.stdout" | wc -c)" -lt 9000 ] && [ "$(wc -c < "$SD/ctx/t7.txt")" -eq 20000 ]'
 fi
 
+# --- retrieval: scripts/ss-ctx ---
+SC="$ROOT/scripts/ss-ctx"
+RS="$(mktemp -d)/.superstack"; mkdir -p "$RS/ctx"
+printf 'alpha\nNEEDLE here\ngamma\n' > "$RS/ctx/aaa.txt"
+printf 'just delta\n' > "$RS/ctx/bbb.txt"
+touch -t 202606240000 "$RS/ctx/aaa.txt"; touch -t 202606250000 "$RS/ctx/bbb.txt"   # bbb newer
+rc(){ SUPERSTACK_DIR="$RS" bash "$SC" "$@" 2>/dev/null; }
+chk "list newest-first"   '[ "$(rc list | awk "{print \$2}" | head -1)" = "bbb" ]'
+chk "list shows bytes+id" 'rc list | grep -qE "^[0-9]+ +aaa$"'
+chk "show prints content" '[ "$(rc show aaa | sed -n "2p")" = "NEEDLE here" ]'
+chk "show byte-exact"     '[ "$(rc show aaa | wc -c)" -eq "$(wc -c < "$RS/ctx/aaa.txt")" ]'
+chk "show missing exit 1" 'rc show nope >/dev/null 2>&1; [ "$?" -eq 1 ]'
+chk "search finds id"     'rc search NEEDLE | grep -qF "aaa: NEEDLE here"'
+chk "search miss message" 'rc search ZZZ | grep -qF "no matches"'
+chk "usage exit 2"        'SUPERSTACK_DIR="$RS" bash "$SC" bogus >/dev/null 2>&1; [ "$?" -eq 2 ]'
+# prune keeps N newest
+for i in $(seq 1 5); do printf 'x\n' > "$RS/ctx/p$i.txt"; touch -t 20260625000$i "$RS/ctx/p$i.txt"; done
+rc prune --keep 3 >/dev/null
+chk "prune keeps N"       '[ "$(ls "$RS/ctx"/*.txt | wc -l)" -eq 3 ]'
+
 echo
 [ "$fail" -eq 0 ] && echo "CTX TESTS PASS" || echo "CTX TESTS FAILED"
 exit "$fail"

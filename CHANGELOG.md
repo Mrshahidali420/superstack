@@ -20,6 +20,10 @@ All notable changes to SuperStack are documented here. The format follows
   (CLAUDE.md, STATE.md/CONTEXT.md, skill descriptions) vs a token budget (OK/WARN/OVER), detects the
   rest of the context stack, and flags bloat with fixes. Runs automatically at session start (advisory
   only when over budget). Front 1 of the context all-rounder. bash + PowerShell. (29 skills.)
+- **`/ss-ctx`:** transparent tool-output shrinker - an always-on `PostToolUse` hook replaces oversized
+  clean Bash output with a head/tail summary and offloads the full text to `.superstack/ctx/`;
+  `/ss-ctx list|show|search|prune` retrieves it. Zero runtime (bash hook + files). Front 2 of the
+  context all-rounder (the runtime-output sandbox). bash + PowerShell. (30 skills.)
 
 ## [0.6.0] - 2026-06-25
 

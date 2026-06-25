@@ -67,8 +67,8 @@ function SortEntriesOrdinal($items) {
 
 switch ($Cmd) {
   'list' {
-    if (-not (Test-Path -LiteralPath $store -PathType Container)) { Write-Output "ss-ctx: store empty ($store)"; exit 0 }
-    $items = @(Entries); if ($items.Count -eq 0) { Write-Output "ss-ctx: store empty ($store)"; exit 0 }
+    if (-not (Test-Path -LiteralPath $store -PathType Container)) { Write-Output "ss-ctx: store empty"; exit 0 }
+    $items = @(Entries); if ($items.Count -eq 0) { Write-Output "ss-ctx: store empty"; exit 0 }
     $sorted = @(SortRowsOrdinal $items)
     $out = New-Object System.Collections.Generic.List[string]
     foreach ($f in $sorted) {

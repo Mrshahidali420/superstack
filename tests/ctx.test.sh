@@ -85,6 +85,11 @@ if command -v pwsh >/dev/null 2>&1; then
   op="$(SUPERSTACK_DIR="$PP" pwsh -NoProfile -File "$ps1" prune -Keep 2 2>/dev/null | tr -d '\r')"
   chk "ps1 parity [prune output]"    '[ "$ob" = "$op" ] && [ "$ob" = "ss-ctx: kept up to 2 newest" ]'
   chk "ps1 parity [prune survivors]" '[ "$(ls "$PB/ctx" | sort)" = "$(ls "$PP/ctx" | sort)" ] && [ "$(ls "$PB/ctx" | wc -l)" -eq 2 ]'
+  # empty-store list: the message must NOT embed the store path (bash msys path vs ps1 cygpath'd path diverge).
+  ES="$(mktemp -d)/.superstack"
+  eb="$(SUPERSTACK_DIR="$ES" bash "$ROOT/scripts/ss-ctx" list 2>/dev/null)"
+  ep="$(SUPERSTACK_DIR="$ES" pwsh -NoProfile -File "$ps1" list 2>/dev/null | tr -d '\r')"
+  chk "ps1 parity [list empty]" '[ "$eb" = "$ep" ] && [ "$eb" = "ss-ctx: store empty" ]'
 else
   echo "  SKIP ctx ps1 parity (pwsh not installed)"
 fi

@@ -10,14 +10,14 @@ sanitize() { printf '%s' "$1" | tr -c 'A-Za-z0-9_-' '_'; }
 
 case "$cmd" in
   list)
-    [ -d "$store" ] || { echo "ss-ctx: store empty ($store)"; exit 0; }
+    [ -d "$store" ] || { echo "ss-ctx: store empty"; exit 0; }
     rows=""; found=0
     for f in "$store"/*.txt; do
       [ -e "$f" ] || continue; found=1
       b="$(wc -c < "$f" | tr -d ' ')"; m="$(date -r "$f" +%s 2>/dev/null || echo 0)"
       n="$(basename "$f" .txt)"; rows="${rows}${m}|${b}|${n}"$'\n'
     done
-    [ "$found" = "1" ] || { echo "ss-ctx: store empty ($store)"; exit 0; }
+    [ "$found" = "1" ] || { echo "ss-ctx: store empty"; exit 0; }
     printf '%s' "$rows" | sort -t'|' -k1,1nr -k3,3 | while IFS='|' read -r m b n; do
       [ -n "$n" ] || continue; printf '%-12s %s\n' "$b" "$n"
     done

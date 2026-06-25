@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Change provenance: spec docs + ledger gates interleaved with git commits (read-only).
+# Usage: ss-trace [<change>] [base]   Exit: 0 ok, 1 usage, 2 missing jq.
+set -uo pipefail
+export LC_ALL=C
+dir="${SUPERSTACK_DIR:-.superstack}"
+ledger="$dir/ledger.jsonl"
+
+[ "$#" -le 2 ] || { echo "ss-trace: too many args (usage: ss-trace [<change>] [base])" >&2; exit 1; }
+change="${1:-}"; base="${2:-}"
+[ -n "$change" ] || change="$(git branch --show-current 2>/dev/null || true)"
+[ -n "$change" ] || change="default"
+if [ -z "$base" ]; then
+  if git rev-parse --verify -q main >/dev/null 2>&1; then base="main"
+  elif git rev-parse --verify -q master >/dev/null 2>&1; then base="master"
+  else base="main"; fi
+fi
+command -v jq >/dev/null 2>&1 || { echo "ss-trace: jq not found (required)" >&2; exit 2; }
+
+SEP="$(printf -- '-%.0s' {1..54})"
+slug="${change##*/}"
+have_ref=0; git rev-parse --verify -q "$change" >/dev/null 2>&1 && have_ref=1
+
+tmp="$(mktemp)"; tmps="$(mktemp)"; trap 'rm -f "$tmp" "$tmps"' EXIT
+# ledger gate/skip rows: <ts> G <phase> <STATUS> <note>
+if [ -s "$ledger" ]; then
+  jq -rn --arg c "$change" '
+    [inputs] | map(select(.change==$c and (.event=="gate" or .event=="skip")))
+    | .[] | [.ts, "G", .phase, (.status|ascii_upcase), (.note // "")] | @tsv
+  ' < "$ledger" 2>/dev/null >> "$tmp" || true
+fi
+# git commit rows: <ts> C <sha7> <subject>
+if [ "$have_ref" = "1" ]; then
+  TZ=UTC git log "$base..$change" --date=format-local:'%Y-%m-%dT%H:%M:%SZ' \
+    --format='%cd%x09C%x09%h%x09%s' 2>/dev/null >> "$tmp" || true
+fi
+sort "$tmp" > "$tmps" 2>/dev/null || true
+
+if [ ! -s "$tmps" ]; then
+  printf 'ss-trace: provenance for %s\n%s\nss-trace: no trace for %s\n' "$change" "$SEP" "$change"
+  exit 0
+fi
+
+printf 'ss-trace: provenance for %s\n%s\nintent:\n' "$change" "$SEP"
+found=0
+for f in docs/specs/*"$slug"*.md; do
+  [ -e "$f" ] || continue; printf '  %s\n' "$f"; found=1
+done
+[ "$found" = "1" ] || printf '  (no spec/plan docs found)\n'
+printf '%s\nlineage (gates + commits, chronological):\n' "$SEP"
+gates=0; commits=0
+while IFS=$'\t' read -r ts typ f3 f4 f5; do
+  t="${ts:5:5} ${ts:11:5}"
+  if [ "$typ" = "G" ]; then
+    line="$(printf '  %s  %-8s %-5s %s' "$t" "$f3" "$f4" "$f5")"
+    printf '%s\n' "${line%"${line##*[![:space:]]}"}"
+    gates=$((gates+1))
+  else
+    printf '  %s  %-8s %s  %s\n' "$t" "*" "$f3" "$f4"
+    commits=$((commits+1))
+  fi
+done < "$tmps"
+[ "$have_ref" = "1" ] || printf "  (branch '%s' not found; git commits omitted)\n" "$change"
+printf '%s\n' "$SEP"
+files=0; head="n/a"
+if [ "$have_ref" = "1" ]; then
+  files="$(TZ=UTC git diff --name-only "$base..$change" 2>/dev/null | wc -l | tr -d ' ')"
+  head="$(git rev-parse --short "$change" 2>/dev/null || echo n/a)"
+fi
+printf 'origin: %s   gates: %d   commits: %d   files: %s   head: %s\n' "$change" "$gates" "$commits" "$files" "$head"

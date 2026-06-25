@@ -67,6 +67,23 @@ chk "flag ledger"  'printf "%s" "$df_out" | grep -qF "  ! ledger.jsonl 1001 line
 ( run "$D" --budget 0 ) >/dev/null 2>&1; chk "budget 0 exit 1" '[ "$?" -eq 1 ]'
 ( run "$D" --bogus )    >/dev/null 2>&1; chk "bogus exit 1"   '[ "$?" -eq 1 ]'
 
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-context.ps1")"; else ps1arg="$ROOT/scripts/ss-context.ps1"; fi
+  Dp="$(mkfix)"; Dp2="$(mkfix)"; printf '{"mcpServers":{"context-mode":{}}}\n' > "$Dp2/.mcp.json"
+  # full report parity (default budget; detection none) and (with mcp detection)
+  for fx in "$Dp" "$Dp2"; do
+    pb="$(cd "$fx" && HOME="$HOMEDIR" SUPERSTACK_DIR="$fx/.superstack" bash "$ROOT/scripts/ss-context")"
+    pp="$(cd "$fx" && HOME="$HOMEDIR" SUPERSTACK_DIR="$fx/.superstack" pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
+    chk "ps1 parity report [$fx]" '[ "$pb" = "$pp" ]'
+  done
+  # --check advisory parity (over budget)
+  cb="$(cd "$Dp" && HOME="$HOMEDIR" SUPERSTACK_DIR="$Dp/.superstack" bash "$ROOT/scripts/ss-context" --check --budget 1000)"
+  cp="$(cd "$Dp" && HOME="$HOMEDIR" SUPERSTACK_DIR="$Dp/.superstack" pwsh -NoProfile -File "$ps1arg" -Check -Budget 1000 | tr -d '\r')"
+  chk "ps1 parity --check" '[ "$cb" = "$cp" ]'
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "CONTEXT TESTS PASS" || echo "CONTEXT TESTS FAILED"
 exit "$fail"

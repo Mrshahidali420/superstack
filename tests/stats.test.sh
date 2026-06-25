@@ -86,6 +86,27 @@ if command -v pwsh >/dev/null 2>&1; then
     pp="$(pwsh -NoProfile -File "$ps1arg" $ppargs | tr -d '\r')"
     chk "ps1 parity [$args]" '[ "$pb" = "$pp" ]'
   done
+
+  # --- mixed-case parity fixture ---
+  # Seeds case-distinct changes + a timestamp tie (Zeta/alpha share first-ts) to exercise
+  # both case-sensitive grouping (Finding 1) and ordinal tiebreak sort (Finding 2).
+  MC="$(mktemp -d)"; mkdir -p "$MC/.superstack"
+  {
+    J 2026-06-20T00:00:00Z Mid   plan gate fail
+    J 2026-06-21T00:00:00Z mid   plan gate pass
+    J 2026-06-22T00:00:00Z Zeta  plan gate pass
+    J 2026-06-22T00:00:00Z alpha plan gate pass
+  } > "$MC/.superstack/ledger.jsonl"
+  export SUPERSTACK_DIR="$MC/.superstack"
+  mcb="$(bash "$ROOT/scripts/ss-stats")"
+  # (a) bash sees 4 distinct runs (Mid != mid, Zeta != alpha — all case-sensitive)
+  chk "mixed-case bash runs 4" 'printf "%s" "$mcb" | grep -qF "runs: 4"'
+  # (b) byte-identical output between bash and ps1 (catches grouping + tiebreak bugs)
+  mcp="$(pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
+  chk "mixed-case ps1 parity" '[ "$mcb" = "$mcp" ]'
+  # (c) unknown arg exits 1
+  pwsh -NoProfile -File "$ps1arg" -Bogus >/dev/null 2>&1
+  chk "ps1 unknown arg exit 1" '[ "$?" -eq 1 ]'
 else
   echo "  SKIP ps1 parity (pwsh not installed)"
 fi

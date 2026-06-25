@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: MIT
 # Cross-run loop analytics from the ledger (read-only).
 # Usage: ss-stats.ps1 [-Since <Nd|Nh|YYYY-MM-DD>] [-Limit N]   Exit: 0 ok, 1 usage.
-param([string]$Since='', [string]$Limit='10')
+param([string]$Since='', [string]$Limit='10', [Parameter(ValueFromRemainingArguments=$true)][string[]]$Rest)
 $ErrorActionPreference = 'Stop'
 
+if ($Rest -and $Rest.Count -gt 0) { [Console]::Error.WriteLine("ss-stats: unknown argument(s): $($Rest -join ' ')"); exit 1 }
 if ($Limit -notmatch '^[0-9]+$' -or [int]$Limit -lt 1) { [Console]::Error.WriteLine("ss-stats: --limit must be a positive integer"); exit 1 }
 $lim = [int]$Limit
 
@@ -36,7 +37,7 @@ if ($cutoff) { $entries = @($entries | Where-Object { [string]::CompareOrdinal($
 
 # build run records
 $runs = @()
-foreach ($g in ($entries | Group-Object change)) {
+foreach ($g in ($entries | Group-Object change -CaseSensitive)) {
   $es = $g.Group
   $tss = [string[]]@($es | ForEach-Object { $_.ts }); [Array]::Sort($tss, [System.StringComparer]::Ordinal)
   $runs += [PSCustomObject]@{
@@ -53,8 +54,13 @@ if ($runs.Count -eq 0) {
   if ($cutoff) { EmitEmpty 'no runs in window' } else { EmitEmpty 'no runs yet' }
   exit 0
 }
-# order by first ts (ordinal), tiebreak change
-$runs = @($runs | Sort-Object @{Expression='first'}, @{Expression='change'})
+# order by first ts then change, ordinal — matches jq sort_by(.first,.change) under LC_ALL=C
+# Note: [Array]::Sort parallel-sort requires matching typed arrays; use int[] index to avoid
+# the [object[]] overload resolution bug where items are not rearranged.
+$sortKeys = [string[]]@($runs | ForEach-Object { $_.first + [char]1 + $_.change })
+$sortIdx  = [int[]]@(0..($runs.Count - 1))
+[Array]::Sort($sortKeys, $sortIdx, [System.StringComparer]::Ordinal)
+$runs = @($sortIdx | ForEach-Object { $runs[$_] })
 
 $n = $runs.Count
 $tf = ($runs | Measure-Object fails -Sum).Sum; if (-not $tf) { $tf = 0 }

@@ -6,7 +6,7 @@
 
 Frame → Plan → Build → Review → QA → Secure → Ship → Learn
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.6.0](https://img.shields.io/badge/release-v0.6.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 27](https://img.shields.io/badge/skills-27-7c3aed.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.6.0](https://img.shields.io/badge/release-v0.6.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 28](https://img.shields.io/badge/skills-28-7c3aed.svg)
 
 Built for Claude Code; portable to any skill-aware agent.
 
@@ -146,7 +146,7 @@ Then run `/ss-init` once in your project to set up `.superstack/`, and `/ss-fram
 | `/ss-evolve` | Learn from your ledger; auto-apply low-risk fixes, draft new skills for review. Now supports `--since <window>` (time-windowed detection) and `--explore` (deterministic draft-skill proposals into `.superstack/proposals/`, never auto-committed). |
 | `/ss-ralph` | Run the loop unattended until a PRD is fully done |
 
-**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` `/ss-doctor` `/ss-drift` `/ss-stats` — run `/ss-help` for the full index (**27 skills, 4 review agents, 2 hooks**).
+**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` `/ss-doctor` `/ss-drift` `/ss-stats` `/ss-trace` — run `/ss-help` for the full index (**28 skills, 4 review agents, 2 hooks**).
 
 ---
 

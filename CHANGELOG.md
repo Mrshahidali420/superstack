@@ -11,6 +11,11 @@ All notable changes to SuperStack are documented here. The format follows
   span) plus a rollup (gate-fail rate, skips, and an improving/worsening/flat trend over the window).
   `--since`/`--limit`; the cross-run companion to `/ss-report`, distinct from `/ss-evolve`. bash +
   PowerShell. (27 skills.)
+- **`/ss-trace`:** read-only change provenance — joins a change's spec/plan docs, its ledger gate/skip
+  events, and its git commits into one chronological lineage with an origin footer (gates, commits,
+  files, head SHA). `[<change>] [base]`; degrades gracefully for merged/deleted branches. The view
+  that links the ledger to git + specs, distinct from `/ss-replay` and `/ss-report`. bash +
+  PowerShell. (28 skills.)
 
 ## [0.6.0] - 2026-06-25
 

@@ -55,6 +55,19 @@ outn="$(run "$D" nothing)"
 chk "no trace" 'printf "%s" "$outn" | grep -qF "ss-trace: no trace for nothing"'
 ( run "$D" a b c ) >/dev/null 2>&1; chk "too many args exit 1" '[ "$?" -eq 1 ]'
 
+# parity: read-only, compare bash vs ps1 on the full trace + the branch-not-found case
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-trace.ps1")"; else ps1arg="$ROOT/scripts/ss-trace.ps1"; fi
+  P="$(mkfix)"
+  for c in feat/demo gone; do
+    pb="$(cd "$P" && SUPERSTACK_DIR="$P/.superstack" bash "$ROOT/scripts/ss-trace" "$c")"
+    pp="$(cd "$P" && SUPERSTACK_DIR="$P/.superstack" pwsh -NoProfile -File "$ps1arg" -Change "$c" | tr -d '\r')"
+    chk "ps1 parity [$c]" '[ "$pb" = "$pp" ]'
+  done
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "TRACE TESTS PASS" || echo "TRACE TESTS FAILED"
 exit "$fail"

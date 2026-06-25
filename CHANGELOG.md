@@ -6,6 +6,8 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-25
+
 ### Added
 - **`/ss-doctor`:** read-only project health check — verifies `jq`, `git`, `.superstack/config`,
   gitignore, and the ledger, printing a `[OK]`/`[WARN]`/`[FAIL]` checklist with an actionable fix per
@@ -81,7 +83,9 @@ All notable changes to SuperStack are documented here. The format follows
 - Cross-platform installers and Claude Code plugin + marketplace manifests.
 - Skill-frontmatter linter (`scripts/lint-skills.sh`), self-test, and CI.
 
-[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/Mrshahidali420/superstack/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/Mrshahidali420/superstack/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Mrshahidali420/superstack/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Mrshahidali420/superstack/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Mrshahidali420/superstack/compare/v0.1.0...v0.2.0

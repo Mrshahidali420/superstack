@@ -22,6 +22,10 @@ escape_json() {
 intro="<EXTREMELY_IMPORTANT>\nSuperStack is active. Run ONE loop on every non-trivial task: Frame -> Plan -> Build -> Review -> QA -> Secure -> Ship -> Learn. Skills are mandatory workflows, not suggestions; scale the loop down for trivial changes. Below is your bootstrap skill:\n\n"
 context="${intro}$(escape_json "$bootstrap")\n</EXTREMELY_IMPORTANT>"
 
+# Front 1: append the standing-context budget advisory iff over the warn threshold (silent otherwise).
+adv="$(cd "$PWD" && bash "${PLUGIN_ROOT}/scripts/ss-context" --check 2>/dev/null || true)"
+[ -n "$adv" ] && context="${context}\\n\\n$(escape_json "$adv")"
+
 if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
   printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$context"
 else

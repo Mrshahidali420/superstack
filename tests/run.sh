@@ -30,6 +30,15 @@ else
   echo "      FAIL - session-start must emit valid JSON and guard-check must be inert when disabled"; fail=1
 fi
 
+# context advisory: present when over budget, absent when OK; JSON stays valid both ways.
+ctxfix_over="$(mktemp -d)"; head -c 40000 /dev/zero | tr '\0' x > "$ctxfix_over/CLAUDE.md"   # ~10000 tok > 8000
+ctxfix_ok="$(mktemp -d)";   head -c 400   /dev/zero | tr '\0' x > "$ctxfix_ok/CLAUDE.md"
+over_out="$(cd "$ctxfix_over" && bash "$ROOT/hooks/session-start" 2>/dev/null)"
+ok_out="$(cd "$ctxfix_ok"   && bash "$ROOT/hooks/session-start" 2>/dev/null)"
+if printf '%s' "$over_out" | grep -qF '[ss-context]'; then echo "      PASS hook advisory present (over budget)"; else echo "      FAIL hook advisory missing"; fail=1; fi
+if printf '%s' "$ok_out" | grep -qF '[ss-context]'; then echo "      FAIL hook advisory leaked (ok budget)"; fail=1; else echo "      PASS hook advisory silent (ok budget)"; fi
+if printf '%s' "$over_out" | jq -e . >/dev/null 2>&1; then echo "      PASS hook JSON valid"; else echo "      FAIL hook JSON invalid"; fail=1; fi
+
 echo "[4/14] ledger + audit behavior"
 if bash "$ROOT/tests/ledger.test.sh" >/dev/null 2>&1; then
   echo "      PASS"

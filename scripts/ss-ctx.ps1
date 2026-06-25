@@ -43,8 +43,7 @@ function SortRowsOrdinal($items) {
     $grp = @($groups[$ep])
     if ($grp.Count -gt 1) {
       # Ordinal sort within tie group using byte comparison
-      $sorted = $grp | Sort-Object -Property @{Expression={ $_.Name }; Ascending=$true } |
-        Sort-Object -Stable -Property @{Expression={
+      $sorted = $grp | Sort-Object -Property @{Expression={
           [System.Text.Encoding]::UTF8.GetBytes($_.Name) | ForEach-Object { $_.ToString('X2') } | Join-String
         }; Ascending=$true }
       foreach ($s in $sorted) { $result.Add($s.Item) }
@@ -104,7 +103,7 @@ switch ($Cmd) {
   }
   'prune' {
     $keep = 50
-    if ($A1 -eq '--keep') { $keep = $A2 }
+    if ($A1 -eq '--keep') { $keep = if ([string]::IsNullOrEmpty($A2)) { '50' } else { $A2 } }   # match bash ${3:-50}
     if ($keep -notmatch '^[0-9]+$') { [Console]::Error.WriteLine('ss-ctx: --keep needs a number'); exit 2 }
     $keep = [int]$keep
     if (-not (Test-Path -LiteralPath $store -PathType Container)) { Write-Output 'ss-ctx: store empty'; exit 0 }

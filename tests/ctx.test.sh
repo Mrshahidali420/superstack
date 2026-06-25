@@ -73,7 +73,8 @@ if command -v pwsh >/dev/null 2>&1; then
   printf 'beta\nneedle lower\n' > "$PS/ctx/Bbb.txt"     # mixed case id (ordinal tiebreak)
   printf 'gamma\n' > "$PS/ctx/ccc.txt"
   touch -t 202606240000 "$PS/ctx/aaa.txt"; touch -t 202606240000 "$PS/ctx/Bbb.txt"; touch -t 202606250000 "$PS/ctx/ccc.txt"
-  for sub in "list" "show aaa" "search NEEDLE" "search needle"; do
+  # "prune --keep" (no N) must default to 50 in BOTH twins (3 files < 50 -> deletes nothing).
+  for sub in "list" "show aaa" "search NEEDLE" "search needle" "prune --keep"; do
     pb="$(SUPERSTACK_DIR="$PS" bash "$ROOT/scripts/ss-ctx" $sub 2>/dev/null)"
     pp="$(SUPERSTACK_DIR="$PS" pwsh -NoProfile -File "$ps1" $sub 2>/dev/null | tr -d '\r')"
     chk "ps1 parity [$sub]" '[ "$pb" = "$pp" ]'

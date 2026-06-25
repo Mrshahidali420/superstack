@@ -37,6 +37,8 @@ chk "exit 0"       '[ "$rc" -eq 0 ]'
 ( run "$D" --budget 1000 ) >/dev/null 2>&1; chk "over exit 1" '[ "$?" -eq 1 ]'
 over_out="$(run "$D" --budget 1000 || true)"   # capture despite exit 1 (OVER); pipefail-safe
 chk "over verdict" 'printf "%s" "$over_out" | grep -qF "verdict: OVER"'
+# WARN band: budget 4000 -> pct floor((100*2463+2000)/4000)=62 -> WARN (exit 0)
+chk "warn verdict" 'run "$D" --budget 4000 | grep -qF "session-start: ~2463 tokens / 4000 budget (62%)   WARN"'
 
 # --check: silent when OK, one line when over
 chk "check silent" '[ -z "$(run "$D" --check)" ]'

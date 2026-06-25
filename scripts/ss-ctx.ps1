@@ -1,7 +1,9 @@
 #!/usr/bin/env pwsh
 # SPDX-License-Identifier: MIT
 # ss-ctx: read-only access to the PostToolUse shrink store (.superstack/ctx). Front 2a.
-param([Parameter(Position=0)][string]$Cmd='', [Parameter(Position=1)][string]$A1='', [Parameter(Position=2)][string]$A2='')
+# bash twin uses `prune --keep N`; PowerShell intercepts `--keep` as a param name, so the ps1 takes a
+# native `-Keep N` (the project's bash `--flag` <-> ps1 `-Flag` convention). Output stays byte-identical.
+param([Parameter(Position=0)][string]$Cmd='', [Parameter(Position=1)][string]$A1='', [int]$Keep=50)
 $ErrorActionPreference = 'Stop'
 $dir = if ($env:SUPERSTACK_DIR) { $env:SUPERSTACK_DIR } else { '.superstack' }
 if ($dir -match '^/[a-zA-Z]/') { try { $dir = (& cygpath -w $dir 2>$null).Trim() } catch {} }
@@ -102,10 +104,7 @@ switch ($Cmd) {
     if ($hit) { Write-Output ($out -join "`n") } else { Write-Output "ss-ctx: no matches for '$term'" }
   }
   'prune' {
-    $keep = 50
-    if ($A1 -eq '--keep') { $keep = if ([string]::IsNullOrEmpty($A2)) { '50' } else { $A2 } }   # match bash ${3:-50}
-    if ($keep -notmatch '^[0-9]+$') { [Console]::Error.WriteLine('ss-ctx: --keep needs a number'); exit 2 }
-    $keep = [int]$keep
+    $keep = $Keep   # native -Keep int param (default 50); mirrors bash `prune [--keep N]`
     if (-not (Test-Path -LiteralPath $store -PathType Container)) { Write-Output 'ss-ctx: store empty'; exit 0 }
     $i = 0
     foreach ($f in (SortRowsOrdinal @(Entries))) { $i++; if ($i -gt $keep) { Remove-Item -LiteralPath $f.FullName -Force } }

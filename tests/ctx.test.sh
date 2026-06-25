@@ -73,12 +73,18 @@ if command -v pwsh >/dev/null 2>&1; then
   printf 'beta\nneedle lower\n' > "$PS/ctx/Bbb.txt"     # mixed case id (ordinal tiebreak)
   printf 'gamma\n' > "$PS/ctx/ccc.txt"
   touch -t 202606240000 "$PS/ctx/aaa.txt"; touch -t 202606240000 "$PS/ctx/Bbb.txt"; touch -t 202606250000 "$PS/ctx/ccc.txt"
-  # "prune --keep" (no N) must default to 50 in BOTH twins (3 files < 50 -> deletes nothing).
-  for sub in "list" "show aaa" "search NEEDLE" "search needle" "prune --keep"; do
+  for sub in "list" "show aaa" "search NEEDLE" "search needle"; do
     pb="$(SUPERSTACK_DIR="$PS" bash "$ROOT/scripts/ss-ctx" $sub 2>/dev/null)"
     pp="$(SUPERSTACK_DIR="$PS" pwsh -NoProfile -File "$ps1" $sub 2>/dev/null | tr -d '\r')"
     chk "ps1 parity [$sub]" '[ "$pb" = "$pp" ]'
   done
+  # prune mutates -> seed two identical fresh stores; bash uses --keep N, pwsh uses native -Keep N.
+  seedp(){ mkdir -p "$1/ctx"; for i in 1 2 3 4 5; do printf 'x\n' > "$1/ctx/p$i.txt"; touch -t "20260625000$i" "$1/ctx/p$i.txt"; done; }
+  PB="$(mktemp -d)/.superstack"; PP="$(mktemp -d)/.superstack"; seedp "$PB"; seedp "$PP"
+  ob="$(SUPERSTACK_DIR="$PB" bash "$ROOT/scripts/ss-ctx" prune --keep 2 2>/dev/null)"
+  op="$(SUPERSTACK_DIR="$PP" pwsh -NoProfile -File "$ps1" prune -Keep 2 2>/dev/null | tr -d '\r')"
+  chk "ps1 parity [prune output]"    '[ "$ob" = "$op" ] && [ "$ob" = "ss-ctx: kept up to 2 newest" ]'
+  chk "ps1 parity [prune survivors]" '[ "$(ls "$PB/ctx" | sort)" = "$(ls "$PP/ctx" | sort)" ] && [ "$(ls "$PB/ctx" | wc -l)" -eq 2 ]'
 else
   echo "  SKIP ctx ps1 parity (pwsh not installed)"
 fi

@@ -54,7 +54,9 @@ if ($arr.Count -eq 0) {
 $out.Add("ss-trace: provenance for $change")
 $out.Add($SEP)
 $out.Add('intent:')
-$specs = @(Get-ChildItem -Path 'docs/specs' -Filter "*$slug*.md" -File -ErrorAction SilentlyContinue | ForEach-Object { 'docs/specs/' + $_.Name })
+$specs = @(Get-ChildItem -Path 'docs/specs' -File -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name.Contains($slug) -and $_.Name.EndsWith('.md') } |
+  ForEach-Object { 'docs/specs/' + $_.Name })
 [Array]::Sort($specs, [System.StringComparer]::Ordinal)
 if ($specs.Count -gt 0) { foreach ($s in $specs) { $out.Add('  ' + $s) } } else { $out.Add('  (no spec/plan docs found)') }
 $out.Add($SEP)

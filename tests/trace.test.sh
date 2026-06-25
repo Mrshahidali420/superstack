@@ -13,6 +13,7 @@ mkfix() {
     mkdir -p docs/specs .superstack
     printf '# demo\n' > docs/specs/2026-06-25-demo-design.md
     printf '# demo\n' > docs/specs/2026-06-25-demo-plan.md
+    printf '# d\n' > docs/specs/2026-06-25-DEMO-extra.md
     printf 'x\n' > f0; git add -A
     GIT_AUTHOR_DATE='2026-06-25T09:00:00Z' GIT_COMMITTER_DATE='2026-06-25T09:00:00Z' git commit -qm 'chore: init'
     git checkout -q -b feat/demo
@@ -35,6 +36,7 @@ out="$(run "$D" feat/demo)"; rc=$?
 chk "header"        'printf "%s" "$out" | grep -qF "ss-trace: provenance for feat/demo"'
 chk "intent design" 'printf "%s" "$out" | grep -qF "  docs/specs/2026-06-25-demo-design.md"'
 chk "intent plan"   'printf "%s" "$out" | grep -qF "  docs/specs/2026-06-25-demo-plan.md"'
+chk "intent case-sensitive" '! printf "%s" "$out" | grep -qF "DEMO-extra"'
 chk "gate plan"     'printf "%s" "$out" | grep -qE "^  06-25 10:30  plan +PASS"'
 chk "skip rendered" 'printf "%s" "$out" | grep -qE "^  06-25 11:50  secure +SKIP +no IO"'
 chk "commit f1 mark" 'printf "%s" "$out" | grep -qE "^  06-25 11:00  \* +[0-9a-f]+  feat: add f1"'

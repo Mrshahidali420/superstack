@@ -66,6 +66,22 @@ for i in $(seq 1 5); do printf 'x\n' > "$RS/ctx/p$i.txt"; touch -t 20260625000$i
 rc prune --keep 3 >/dev/null
 chk "prune keeps N"       '[ "$(ls "$RS/ctx"/*.txt | wc -l)" -eq 3 ]'
 
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1="$(cygpath -w "$ROOT/scripts/ss-ctx.ps1")"; else ps1="$ROOT/scripts/ss-ctx.ps1"; fi
+  PS="$(mktemp -d)/.superstack"; mkdir -p "$PS/ctx"
+  printf 'alpha\nNEEDLE here\nGamma\n' > "$PS/ctx/aaa.txt"
+  printf 'beta\nneedle lower\n' > "$PS/ctx/Bbb.txt"     # mixed case id (ordinal tiebreak)
+  printf 'gamma\n' > "$PS/ctx/ccc.txt"
+  touch -t 202606240000 "$PS/ctx/aaa.txt"; touch -t 202606240000 "$PS/ctx/Bbb.txt"; touch -t 202606250000 "$PS/ctx/ccc.txt"
+  for sub in "list" "show aaa" "search NEEDLE" "search needle"; do
+    pb="$(SUPERSTACK_DIR="$PS" bash "$ROOT/scripts/ss-ctx" $sub 2>/dev/null)"
+    pp="$(SUPERSTACK_DIR="$PS" pwsh -NoProfile -File "$ps1" $sub 2>/dev/null | tr -d '\r')"
+    chk "ps1 parity [$sub]" '[ "$pb" = "$pp" ]'
+  done
+else
+  echo "  SKIP ctx ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "CTX TESTS PASS" || echo "CTX TESTS FAILED"
 exit "$fail"

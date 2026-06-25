@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Cross-run loop analytics from the ledger (read-only).
+# Usage: ss-stats [--since <Nd|Nh|YYYY-MM-DD>] [--limit N]   Exit: 0 ok, 1 usage, 2 missing jq.
+set -uo pipefail
+export LC_ALL=C
+dir="${SUPERSTACK_DIR:-.superstack}"
+ledger="$dir/ledger.jsonl"
+
+since=""; limit=10
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --since) since="${2:-}"; shift 2;;
+    --since=*) since="${1#*=}"; shift;;
+    --limit) limit="${2:-}"; shift 2;;
+    --limit=*) limit="${1#*=}"; shift;;
+    *) echo "ss-stats: unknown flag '$1' (usage: ss-stats [--since <Nd|Nh|YYYY-MM-DD>] [--limit N])" >&2; exit 1;;
+  esac
+done
+case "$limit" in ''|*[!0-9]*) echo "ss-stats: --limit must be a positive integer" >&2; exit 1;; esac
+[ "$limit" -ge 1 ] 2>/dev/null || { echo "ss-stats: --limit must be a positive integer" >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "ss-stats: jq not found (required)" >&2; exit 2; }
+
+cutoff=""
+if [ -n "$since" ]; then
+  case "$since" in
+    [0-9]*d) n="${since%d}"; cutoff="$(jq -rn --argjson off "$((n*86400))" 'now - $off | todate')";;
+    [0-9]*h) n="${since%h}"; cutoff="$(jq -rn --argjson off "$((n*3600))" 'now - $off | todate')";;
+    [0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]) cutoff="${since}T00:00:00Z";;
+    *) echo "ss-stats: bad --since '$since' (use Nd, Nh, or YYYY-MM-DD)" >&2; exit 1;;
+  esac
+fi
+
+SEP="$(printf -- '-%.0s' {1..54})"
+emit_empty() { printf 'ss-stats: loop trends\n'; printf '%s\n' "$SEP"; printf 'ss-stats: %s\n' "$1"; }
+
+[ -s "$ledger" ] || { emit_empty "no runs yet"; exit 0; }
+
+data="$(jq -rn --arg cutoff "$cutoff" --argjson limit "$limit" '
+  [inputs]
+  | map(select($cutoff=="" or .ts >= $cutoff))
+  | (group_by(.change) | map({
+      change: .[0].change,
+      first:  (map(.ts) | min),
+      last:   (map(.ts) | max),
+      phases: (map(.phase) | unique | length),
+      fails:  (map(select(.event=="gate" and .status=="fail")) | length),
+      gates:  (map(select(.event=="gate")) | length),
+      skips:  (map(select(.event=="skip")) | length)
+    }) | sort_by(.first, .change)) as $runs
+  | if ($runs|length)==0 then "E"
+    else
+      ($runs|length) as $n
+      | ($runs|map(.fails)|add) as $tf
+      | ($runs|map(.gates)|add) as $tg
+      | ($runs|map(.skips)|add) as $tk
+      | (if $n>=4 then
+           ($n/2|floor) as $h
+           | ($runs[0:$h]) as $o | ($runs[$h:$n]) as $w
+           | ($o|map(.fails)|add) as $fo | ($o|map(.gates)|add) as $go
+           | ($w|map(.fails)|add) as $fn | ($w|map(.gates)|add) as $gn
+           | (if $go==0 or $gn==0 then "n/a"
+              elif ($fn*$go) < ($fo*$gn) then "improving"
+              elif ($fn*$go) > ($fo*$gn) then "worsening"
+              else "flat" end)
+         else "n/a" end) as $trend
+      | ( ($runs | reverse | .[0:$limit] | map(
+            "R\t" + .change
+            + "\t" + (.first[5:10])
+            + "\t" + (.phases|tostring)
+            + "\t" + (.fails|tostring)
+            + "\t" + (.skips|tostring)
+            + "\t" + (((.last|fromdateiso8601)-(.first|fromdateiso8601))|tostring) ))
+          + ["S\t" + ($n|tostring) + "\t" + ($tf|tostring) + "\t" + ($tg|tostring) + "\t" + ($tk|tostring) + "\t" + $trend]
+        ) | .[]
+    end
+' < "$ledger" 2>/dev/null || true)"
+
+[ -n "$data" ] || { emit_empty "no runs yet"; exit 0; }
+if [ "$data" = "E" ]; then
+  [ -n "$since" ] && emit_empty "no runs in window" || emit_empty "no runs yet"
+  exit 0
+fi
+
+window="all"; [ -n "$since" ] && window="since $since"
+S_line="$(printf '%s\n' "$data" | grep '^S' | head -1)"
+IFS=$'\t' read -r _ runs tfails tgates tskips trend <<< "$S_line"
+
+printf 'ss-stats: loop trends\n'
+printf '%s\n' "$SEP"
+printf 'runs: %s   window: %s\n' "$runs" "$window"
+printf '%s\n' "$SEP"
+printf '%-16s%-8s%-8s%-7s%-7s%s\n' 'change' 'date' 'phases' 'fails' 'skips' 'span'
+printf '%s\n' "$data" | grep '^R' | while IFS=$'\t' read -r _ change date phases fails skips span_s; do
+  printf '%-16s%-8s%-8s%-7s%-7s+%dm\n' "${change:0:15}" "$date" "$phases" "$fails" "$skips" "$((span_s/60))"
+done
+printf '%s\n' "$SEP"
+if [ "$tgates" -gt 0 ]; then
+  printf 'gate-fail rate: %d%% (%d/%d)   skips: %d   trend: %s\n' "$((100*tfails/tgates))" "$tfails" "$tgates" "$tskips" "$trend"
+else
+  printf 'gate-fail rate: n/a (0 gates)   skips: %d   trend: %s\n' "$tskips" "$trend"
+fi
+exit 0

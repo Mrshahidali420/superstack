@@ -75,6 +75,21 @@ export SUPERSTACK_DIR="$D/.superstack"
 outn="$(bash "$ROOT/scripts/ss-stats" --since 2030-01-01)"
 chk "no runs in window" 'printf "%s" "$outn" | grep -qF "ss-stats: no runs in window"'
 
+# parity: read-only, compare a real run on the fixture (full) and with --limit + --since
+if command -v pwsh >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-stats.ps1")"; else ps1arg="$ROOT/scripts/ss-stats.ps1"; fi
+  P="$(mkfix)"; export SUPERSTACK_DIR="$P/.superstack"
+  for args in "" "--limit 2 --since 2026-06-21"; do
+    pb="$(bash "$ROOT/scripts/ss-stats" $args)"
+    # translate bash flags to ps1 flags
+    ppargs="$(printf '%s' "$args" | sed 's/--limit/-Limit/; s/--since/-Since/')"
+    pp="$(pwsh -NoProfile -File "$ps1arg" $ppargs | tr -d '\r')"
+    chk "ps1 parity [$args]" '[ "$pb" = "$pp" ]'
+  done
+else
+  echo "  SKIP ps1 parity (pwsh not installed)"
+fi
+
 echo
 [ "$fail" -eq 0 ] && echo "STATS TESTS PASS" || echo "STATS TESTS FAILED"
 exit "$fail"

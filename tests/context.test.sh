@@ -76,6 +76,12 @@ if command -v pwsh >/dev/null 2>&1; then
     pp="$(cd "$fx" && HOME="$HOMEDIR" SUPERSTACK_DIR="$fx/.superstack" pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
     chk "ps1 parity report [$fx]" '[ "$pb" = "$pp" ]'
   done
+  # MIXED-CASE detection regression: bash grep + ps1 Select-String -CaseSensitive must BOTH miss "Context-Mode"
+  Dmc="$(mkfix)"; printf '{"mcpServers":{"Context-Mode":{}}}\n' > "$Dmc/.mcp.json"
+  mb="$(cd "$Dmc" && HOME="$HOMEDIR" SUPERSTACK_DIR="$Dmc/.superstack" bash "$ROOT/scripts/ss-context")"
+  mp="$(cd "$Dmc" && HOME="$HOMEDIR" SUPERSTACK_DIR="$Dmc/.superstack" pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
+  chk "ps1 parity mixed-case detect" '[ "$mb" = "$mp" ]'
+  chk "mixed-case not detected (case-sensitive)" 'printf "%s" "$mb" | grep -qE "^  runtime sandbox +not detected"'
   # --check advisory parity (over budget)
   cb="$(cd "$Dp" && HOME="$HOMEDIR" SUPERSTACK_DIR="$Dp/.superstack" bash "$ROOT/scripts/ss-context" --check --budget 1000)"
   cp="$(cd "$Dp" && HOME="$HOMEDIR" SUPERSTACK_DIR="$Dp/.superstack" pwsh -NoProfile -File "$ps1arg" -Check -Budget 1000 | tr -d '\r')"

@@ -24,7 +24,7 @@ $skBytes = 0; $skCount = 0
 if (Test-Path 'skills' -PathType Container) {
   foreach ($f in (Get-ChildItem -Path 'skills' -Filter 'SKILL.md' -Recurse -File -ErrorAction SilentlyContinue)) {
     $line = (Get-Content -LiteralPath $f.FullName | Where-Object { $_ -match '^description:' } | Select-Object -First 1)
-    if ($null -ne $line) { $d = ($line -replace '^description:[ ]*',''); $skCount++; $skBytes += $d.Length }
+    if ($null -ne $line) { $d = ($line -replace '^description:[ ]*',''); $skCount++; $skBytes += [System.Text.Encoding]::UTF8.GetByteCount($d) }
   }
 }
 if ($skCount -gt 0) { $skT = [math]::Floor($skBytes / 4); $total += $skT; $rows.Add([pscustomobject]@{ n="skill descs ($skCount)"; b=$skBytes; t=$skT }) }
@@ -43,7 +43,7 @@ if ($rpf -gt 50) { $flags.Add("  ! replays/+proposals/ $rpf files - archive") }
 function Detect($nativeScript, $cfgName) {
   if (Test-Path -LiteralPath $nativeScript -PathType Leaf) { return @('detected', "$([System.IO.Path]::GetFileName($nativeScript)) (native)") }
   foreach ($c in @('.mcp.json', (Join-Path $homeDir '.claude.json'))) {
-    if ((Test-Path -LiteralPath $c -PathType Leaf) -and (Select-String -LiteralPath $c -SimpleMatch $cfgName -Quiet)) { return @('detected', "$cfgName (mcp)") }
+    if ((Test-Path -LiteralPath $c -PathType Leaf) -and (Select-String -LiteralPath $c -SimpleMatch $cfgName -CaseSensitive -Quiet)) { return @('detected', "$cfgName (mcp)") }
   }
   return @($null, $null)
 }

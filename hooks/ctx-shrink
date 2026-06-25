@@ -50,10 +50,14 @@ tail_part="$(tail -n "$tail_n" "$tmp" | tail -c "$tb")"
 marker="[ss-ctx] truncated - ${bytes} bytes, ${lines} lines total - full: ${out} - retrieve: /ss-ctx show ${id}"
 summary="$(printf '%s\n%s\n%s' "$head_part" "$marker" "$tail_part")"
 
-printf '%s' "$input" | jq --arg s "$summary" '{
+# Buffer the JSON, then emit only on success: a jq failure (incl. an OOM-kill mid-write) can never
+# flush partial/invalid JSON to stdout (the hook runs after every Bash call - emission must be all-or-nothing).
+result="$(printf '%s' "$input" | jq --arg s "$summary" '{
   hookSpecificOutput: {
     hookEventName: "PostToolUse",
     updatedToolOutput: (.tool_response | .stdout = $s)
   }
-}' 2>/dev/null || exit 0
+}' 2>/dev/null)" || exit 0
+[ -n "$result" ] || exit 0
+printf '%s\n' "$result"
 exit 0

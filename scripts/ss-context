@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Standing-context budget cockpit (read-only). Front 1 of the context all-rounder.
+# Usage: ss-context [--budget N] [--check]  Exit: 0 ok/warn, 1 over (report), 2 usage. --check always 0.
+set -uo pipefail
+export LC_ALL=C
+dir="${SUPERSTACK_DIR:-.superstack}"
+budget=8000; check=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --budget) budget="${2:-}"; shift 2;;
+    --budget=*) budget="${1#*=}"; shift;;
+    --check) check=1; shift;;
+    *) echo "ss-context: unknown flag '$1' (usage: ss-context [--budget N] [--check])" >&2; exit 1;;
+  esac
+done
+case "$budget" in ''|*[!0-9]*) echo "ss-context: --budget must be a positive integer" >&2; exit 1;; esac
+[ "$budget" -ge 1 ] 2>/dev/null || { echo "ss-context: --budget must be a positive integer" >&2; exit 1; }
+
+fbytes() { if [ -f "$1" ]; then wc -c < "$1" | tr -d ' '; else echo 0; fi; }
+rows=""; total=0
+add_row() { local b; b="$(fbytes "$2")"; [ "$b" -gt 0 ] || return 0; local t=$((b/4)); rows="${rows}${1}|${b}|${t}"$'\n'; total=$((total+t)); }
+add_row "CLAUDE.md" "CLAUDE.md"
+add_row "AGENTS.md" "AGENTS.md"
+add_row "STATE.md" "STATE.md"
+add_row "CONTEXT.md" "CONTEXT.md"
+sk_bytes=0; sk_count=0
+if [ -d skills ]; then
+  for f in skills/*/SKILL.md; do
+    [ -e "$f" ] || continue
+    d="$(awk '/^description:/{sub(/^description:[ ]*/,""); print; exit}' "$f")"
+    sk_count=$((sk_count+1)); sk_bytes=$((sk_bytes + ${#d}))
+  done
+fi
+if [ "$sk_count" -gt 0 ]; then sk_t=$((sk_bytes/4)); rows="${rows}skill descs (${sk_count})|${sk_bytes}|${sk_t}"$'\n'; total=$((total+sk_t)); fi
+
+pct=$(( (100*total + budget/2) / budget ))
+if [ "$pct" -lt 60 ]; then verdict="OK"; elif [ "$pct" -le 100 ]; then verdict="WARN"; else verdict="OVER"; fi
+
+flags=""
+cb="$(fbytes CLAUDE.md)"; [ "$cb" -gt 16384 ] && flags="${flags}  ! CLAUDE.md ${cb} bytes - trim to stable instructions (it is never evicted)"$'\n'
+for sf in STATE.md CONTEXT.md; do sb="$(fbytes "$sf")"; [ "$sb" -gt 8192 ] && flags="${flags}  ! ${sf} ${sb} bytes - compact via /ss-learn"$'\n'; done
+ledger="$dir/ledger.jsonl"
+if [ -f "$ledger" ]; then ll="$(wc -l < "$ledger" | tr -d ' ')"; [ "$ll" -gt 1000 ] && flags="${flags}  ! ledger.jsonl ${ll} lines - archive old entries"$'\n'; fi
+rpf=0; for d2 in "$dir/replays" "$dir/proposals"; do [ -d "$d2" ] && rpf=$((rpf + $(find "$d2" -type f 2>/dev/null | wc -l))); done
+[ "$rpf" -gt 50 ] && flags="${flags}  ! replays/+proposals/ ${rpf} files - archive"$'\n'
+
+rt_det="not detected"; rt_hint="front 2 (ss-ctx) or install context-mode"
+if [ -f scripts/ss-ctx ]; then rt_det="detected"; rt_hint="ss-ctx (native)"; elif grep -qs 'context-mode' .mcp.json "$HOME/.claude.json" 2>/dev/null; then rt_det="detected"; rt_hint="context-mode (mcp)"; fi
+cx_det="not detected"; cx_hint="front 3 (ss-munch) or install jcodemunch"
+if [ -f scripts/ss-munch ]; then cx_det="detected"; cx_hint="ss-munch (native)"; elif grep -qs 'jcodemunch' .mcp.json "$HOME/.claude.json" 2>/dev/null; then cx_det="detected"; cx_hint="jcodemunch (mcp)"; fi
+
+if [ "$check" = "1" ]; then
+  if [ "$pct" -ge 60 ]; then
+    rec="$(printf '%s' "$flags" | sed -n '1s/.* - //p')"; [ -n "$rec" ] || rec="review /ss-context"
+    printf '[ss-context] standing context ~%d tok = %d%% of %d budget - %s (run /ss-context)\n' "$total" "$pct" "$budget" "$rec"
+  fi
+  exit 0
+fi
+
+SEP="$(printf -- '-%.0s' {1..54})"
+printf 'ss-context: standing context budget\n%s\n' "$SEP"
+printf '%-18s%-8s%s\n' 'artifact' 'bytes' '~tokens'
+printf '%s' "$rows" | while IFS='|' read -r n b t; do [ -n "$n" ] || continue; printf '%-18s%-8s%s\n' "$n" "$b" "$t"; done
+printf '%s\n' "$SEP"
+printf 'session-start: ~%d tokens / %d budget (%d%%)   %s\n' "$total" "$budget" "$pct" "$verdict"
+printf '%s\n' "$SEP"
+printf 'context stack:\n'
+printf '  %-18s %-13s %s\n' 'runtime sandbox' "$rt_det" "$rt_hint"
+printf '  %-18s %-13s %s\n' 'code exploration' "$cx_det" "$cx_hint"
+printf '%s\n' "$SEP"
+printf 'flags:\n'
+if [ -n "$flags" ]; then printf '%s' "$flags"; else printf '  (none)\n'; fi
+printf 'verdict: %s   (warn >=60%%, over >100%%)\n' "$verdict"
+[ "$verdict" = "OVER" ] && exit 1 || exit 0

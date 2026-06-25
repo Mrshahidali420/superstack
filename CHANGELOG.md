@@ -16,6 +16,10 @@ All notable changes to SuperStack are documented here. The format follows
   files, head SHA). `[<change>] [base]`; degrades gracefully for merged/deleted branches. The view
   that links the ledger to git + specs, distinct from `/ss-replay` and `/ss-report`. bash +
   PowerShell. (28 skills.)
+- **`/ss-context`:** read-only standing-context budget cockpit — estimates the always-loaded footprint
+  (CLAUDE.md, STATE.md/CONTEXT.md, skill descriptions) vs a token budget (OK/WARN/OVER), detects the
+  rest of the context stack, and flags bloat with fixes. Runs automatically at session start (advisory
+  only when over budget). Front 1 of the context all-rounder. bash + PowerShell. (29 skills.)
 
 ## [0.6.0] - 2026-06-25
 

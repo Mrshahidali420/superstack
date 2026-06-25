@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# ss-ctx PostToolUse shrinker (Front 2a): replace oversized clean Bash stdout with a head/tail summary,
+# offloading the full output to ${SUPERSTACK_DIR}/ctx/<id>.txt. Fail-safe: any problem -> no-op (exit 0).
+set -uo pipefail
+
+[ -n "${SS_CTX_DISABLE:-}" ] && exit 0
+command -v jq >/dev/null 2>&1 || exit 0
+command -v base64 >/dev/null 2>&1 || exit 0
+
+input="$(cat)"
+[ -n "$input" ] || exit 0
+
+tool="$(printf '%s' "$input" | jq -r '.tool_name // ""' 2>/dev/null)" || exit 0
+[ "$tool" = "Bash" ] || exit 0
+
+# Only shrink clean, non-interrupted, string-stdout results (never strip errors the agent needs).
+gate="$(printf '%s' "$input" | jq -r '
+  if (.tool_response | type) != "object" then "skip"
+  elif ((.tool_response.stderr // "") | length) > 0 then "skip"
+  elif (.tool_response.interrupted // false) == true then "skip"
+  elif (.tool_response.stdout | type) != "string" then "skip"
+  else "go" end' 2>/dev/null)" || exit 0
+[ "$gate" = "go" ] || exit 0
+
+threshold="${SS_CTX_THRESHOLD:-8000}"
+head_n="${SS_CTX_HEAD:-30}"; tail_n="${SS_CTX_TAIL:-15}"
+hb="${SS_CTX_HEAD_BYTES:-4000}"; tb="${SS_CTX_TAIL_BYTES:-2000}"
+dir="${SUPERSTACK_DIR:-.superstack}"; store="$dir/ctx"
+
+raw_id="$(printf '%s' "$input" | jq -r '.tool_use_id // "unknown"' 2>/dev/null)" || exit 0
+id="$(printf '%s' "$raw_id" | tr -c 'A-Za-z0-9_-' '_')"   # sanitize clean value (subst already stripped CR/LF)
+[ -n "$id" ] || id="unknown"
+
+tmp="$(mktemp)" || exit 0
+trap 'rm -f "$tmp"' EXIT
+# base64 round-trip: byte-exact stdout regardless of jq's platform text-mode (Windows LF->CRLF). The
+# tr -d '\r\n' strips only jq's base64 line-wrapping (the base64 alphabet has no CR/LF), never content.
+printf '%s' "$input" | jq -r '.tool_response.stdout | @base64' 2>/dev/null | tr -d '\r\n' | base64 -d > "$tmp" 2>/dev/null || exit 0
+bytes="$(wc -c < "$tmp" | tr -d ' ')"
+[ "$bytes" -gt "$threshold" ] 2>/dev/null || exit 0
+
+lines="$(wc -l < "$tmp" | tr -d ' ')"
+mkdir -p "$store" 2>/dev/null || exit 0
+out="$store/$id.txt"
+cp "$tmp" "$out" 2>/dev/null || exit 0
+
+head_part="$(head -n "$head_n" "$tmp" | head -c "$hb")"
+tail_part="$(tail -n "$tail_n" "$tmp" | tail -c "$tb")"
+marker="[ss-ctx] truncated - ${bytes} bytes, ${lines} lines total - full: ${out} - retrieve: /ss-ctx show ${id}"
+summary="$(printf '%s\n%s\n%s' "$head_part" "$marker" "$tail_part")"
+
+printf '%s' "$input" | jq --arg s "$summary" '{
+  hookSpecificOutput: {
+    hookEventName: "PostToolUse",
+    updatedToolOutput: (.tool_response | .stdout = $s)
+  }
+}' 2>/dev/null || exit 0
+exit 0

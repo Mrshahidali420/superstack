@@ -6,6 +6,12 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **`/ss-stats`:** read-only cross-run loop analytics — a per-run table (phases, gate-fails, skips,
+  span) plus a rollup (gate-fail rate, skips, and an improving/worsening/flat trend over the window).
+  `--since`/`--limit`; the cross-run companion to `/ss-report`, distinct from `/ss-evolve`. bash +
+  PowerShell. (27 skills.)
+
 ## [0.6.0] - 2026-06-25
 
 ### Added

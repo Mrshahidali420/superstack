@@ -35,7 +35,8 @@ chk "exit 0"       '[ "$rc" -eq 0 ]'
 
 # OVER: tiny budget -> exit 1
 ( run "$D" --budget 1000 ) >/dev/null 2>&1; chk "over exit 1" '[ "$?" -eq 1 ]'
-chk "over verdict" 'run "$D" --budget 1000 | grep -qF "verdict: OVER"'
+over_out="$(run "$D" --budget 1000 || true)"   # capture despite exit 1 (OVER); pipefail-safe
+chk "over verdict" 'printf "%s" "$over_out" | grep -qF "verdict: OVER"'
 
 # --check: silent when OK, one line when over
 chk "check silent" '[ -z "$(run "$D" --check)" ]'

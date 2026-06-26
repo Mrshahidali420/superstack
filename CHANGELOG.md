@@ -24,6 +24,10 @@ All notable changes to SuperStack are documented here. The format follows
   clean Bash output with a head/tail summary and offloads the full text to `.superstack/ctx/`;
   `/ss-ctx list|show|search|prune` retrieves it. Zero runtime (bash hook + files). Front 2 of the
   context all-rounder (the runtime-output sandbox). bash + PowerShell. (30 skills.)
+- **`ss-ctx` MCP server:** a dependency-free Node server (`mcp/server.mjs`, registered via `.mcp.json`)
+  exposing `ctx_execute` / `ctx_batch_execute` (run a command, keep verbose output out of context),
+  `ctx_search` / `ctx_show` (over the shared `.superstack/ctx/` store), and `ctx_fetch_and_index` (fetch
+  a URL, store the text, return a preview). The proactive half of the runtime-output sandbox (Front 2).
 
 ## [0.6.0] - 2026-06-25
 

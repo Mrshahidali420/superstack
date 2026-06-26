@@ -146,7 +146,7 @@ Then run `/ss-init` once in your project to set up `.superstack/`, and `/ss-fram
 | `/ss-evolve` | Learn from your ledger; auto-apply low-risk fixes, draft new skills for review. Now supports `--since <window>` (time-windowed detection) and `--explore` (deterministic draft-skill proposals into `.superstack/proposals/`, never auto-committed). |
 | `/ss-ralph` | Run the loop unattended until a PRD is fully done |
 
-**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` `/ss-doctor` `/ss-drift` `/ss-stats` `/ss-trace` `/ss-context` `/ss-ctx` — run `/ss-help` for the full index (**30 skills, 4 review agents, 2 hooks**).
+**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` `/ss-doctor` `/ss-drift` `/ss-stats` `/ss-trace` `/ss-context` `/ss-ctx` — run `/ss-help` for the full index (**30 skills, 4 review agents, 2 hooks, 1 MCP server**).
 
 ---
 

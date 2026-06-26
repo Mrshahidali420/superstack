@@ -29,7 +29,8 @@ function saveAndSummarize(id, full, retrieveHint) {
   const head = full.split('\n').slice(0, HEAD).join('\n').slice(0, HEAD_BYTES);
   const tail = full.split('\n').slice(-TAIL).join('\n').slice(-TAIL_BYTES);
   const disp = file.replace(/\\/g, '/');
-  const marker = `[ss-ctx] truncated - ${bytes} bytes, ${lines.length} lines total - full: ${disp} - retrieve: ${retrieveHint}`;
+  const lineCount = lines.length - 1;   // match the 2a hook's `wc -l` (newline count), not split's +1
+  const marker = `[ss-ctx] truncated - ${bytes} bytes, ${lineCount} lines total - full: ${disp} - retrieve: ${retrieveHint}`;
   return `${head}\n${marker}\n${tail}`;
 }
 

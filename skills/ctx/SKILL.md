@@ -53,6 +53,7 @@ optional; if it is not connected, the automatic hook and `/ss-ctx` retrieval sti
 ## Lineage
 
 Original to SuperStack - Front 2 of the context all-rounder (the runtime-output sandbox, the
-context-mode capability rebuilt natively via the `updatedToolOutput` hook primitive). Complements
-[[ss-context]] (the standing-context cockpit, Front 1). A later cycle adds an MCP server for sandboxed
-execution + FTS5 search over the same store.
+context-mode capability rebuilt natively). Two halves over one store: the reactive `PostToolUse` shrink
+hook (via the `updatedToolOutput` primitive) and the proactive MCP server (`ctx_execute` etc.).
+Complements [[ss-context]] (the standing-context cockpit, Front 1). FTS5-ranked search over the store is
+a later enhancement (today's `ctx_search` is literal).

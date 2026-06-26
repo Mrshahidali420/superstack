@@ -150,6 +150,37 @@ Then run `/ss-init` once in your project to set up `.superstack/`, and `/ss-fram
 
 ---
 
+## What's new
+
+The latest additions (full detail in the [Changelog](CHANGELOG.md)):
+
+- **Context engineering, built in — a new "context all-rounder" that keeps the agent's window lean:**
+  - **`/ss-context`** — a standing-context budget cockpit. It measures your always-loaded footprint (CLAUDE.md, skill descriptions, `STATE.md` / `CONTEXT.md`) against a budget and warns you *before* you blow it — automatically, at session start.
+  - **`ss-ctx` runtime-output sandbox** — a `PostToolUse` hook that transparently shrinks oversized command output (saving the full text to a retrievable store), **plus** a dependency-free MCP server exposing `ctx_execute` / `ctx_batch_execute` / `ctx_search` / `ctx_show` / `ctx_fetch_and_index`, so verbose command runs and fetched pages never flood the context window.
+- **Cross-run insight** — **`/ss-stats`** (DORA-style analytics across runs: gate-fail rate, skips, trend) and **`/ss-trace`** (a change's full provenance — spec → ledger → commits — in one chronological lineage).
+- **Earlier** — **`/ss-drift`** (file-drift detection), **`/ss-doctor`** (health checks), **`/ss-init`** (project setup), **`/ss-replay`** (run timelines).
+
+---
+
+## Roadmap
+
+SuperStack is built with its own loop — every feature is framed, planned, reviewed, and proven before it ships.
+
+**Shipped**
+- The eight-phase gated loop + Loop Ledger + `/ss-audit` proof-of-process.
+- Self-evolution (`/ss-evolve`) and unattended autonomy (`/ss-ralph`).
+- Insight & provenance: `/ss-report`, `/ss-replay`, `/ss-stats`, `/ss-trace`.
+- The context all-rounder, **Fronts 1–2**: the `/ss-context` cockpit and the `ss-ctx` runtime-output sandbox (hook + MCP server).
+
+**Next**
+- **Front 3 — `ss-munch`:** symbol-level code retrieval (a tree-sitter AST index) so the agent reads the *function it needs*, not the whole file.
+- **Front 4 — integration:** a routing doctrine that wires the context tools into the loop, with the cockpit reporting the whole stack.
+- **`/ss-panel`:** a unified dashboard over the ledger (report + replay + trace in one view).
+
+Direction: go deeper on the two things that make long, autonomous agent work trustworthy — *verifiable process* and *context engineering*. Ideas and PRs welcome.
+
+---
+
 ## Under the hood
 
 - **Loop Ledger + `/ss-audit`** — every phase records its gate to `.superstack/ledger.jsonl`; the audit checks the mandatory phases (default `review,secure`) each passed or carry an explicit skip-with-reason. An **opt-in** `PreToolUse` hook (`SUPERSTACK_AUDIT=1`) can block a push when the loop is incomplete. See [`docs/ledger.md`](docs/ledger.md).

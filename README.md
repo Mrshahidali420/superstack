@@ -38,20 +38,16 @@ It is its own framework — its own loop, its own gates, its own proof-of-proces
 
 ## How it compares
 
-The real alternatives to SuperStack are *ad-hoc prompting*, a *single one-shot workflow command*, or *stacking several overlapping frameworks* and hoping they don't fight. Here's the difference:
+SuperStack stands on the shoulders of excellent frameworks (see [Credits](#credits--inspiration)) — it makes a different bet than most: **one enforced, *verifiable* loop**, not a library of commands you assemble yourself. Here's how it relates to tools you may already know:
 
-| Capability | Raw prompting | A single workflow command | **SuperStack** |
-|---|:---:|:---:|:---:|
-| Enforced multi-phase process | ✗ | partial | ✅ one gated loop |
-| **Verifiable proof the process ran** | ✗ | ✗ | ✅ ledger + `/ss-audit` |
-| **Self-improves from your usage** | ✗ | ✗ | ✅ `/ss-evolve` |
-| Durable cross-session memory | ✗ | varies | ✅ `STATE.md` / `CONTEXT.md` |
-| Unattended autonomous runs | ✗ | varies | ✅ `/ss-ralph` |
-| Always-on mistake guardrails | ✗ | ✗ | ✅ Karpathy's 4 laws |
-| Cross-agent & collision-free | n/a | varies | ✅ `/ss-*`, 6 agents |
-| Shareable "how it was built" report | ✗ | ✗ | ✅ `/ss-report` |
+| Project | What it is | What SuperStack does differently |
+|---|---|---|
+| **[Superpowers](https://github.com/obra/superpowers)** (obra) | A full methodology built on composable skills that **self-sequence** — the agent reaches for brainstorming → plans → TDD → subagent-driven dev as it recognizes each phase. | Runs the same disciplined instincts as **one enforced, ordered loop** — a **gate per stage** and a **proof-of-process ledger** (`/ss-audit`) you can verify, plus `/ss-evolve` self-improvement. A different *shape*, same DNA. |
+| **[GSD](https://github.com/gsd-build/get-shit-done)** (Get Shit Done) | Phase-based context engineering — discuss → plan → execute, each in a fresh sub-agent window, with a large specialist-agent roster. | Keeps **one durable `STATE.md` / `CONTEXT.md`** across every stage, and adds a **verifiable ledger + `/ss-evolve`** that learns from your own usage. |
+| **[gstack](https://github.com/garrytan/gstack)** (Garry Tan) | A role-based "software factory" — 20+ specialist slash commands (CEO, designer, QA, security, release) you call à la carte, with real-browser QA. | Is a **single spine you walk in order**, gated and logged. It *composes* with gstack — run those specialists alongside the loop (the `/ss-*` namespace never collides). |
+| **[Ralph](https://ghuntley.com/ralph)** (Geoffrey Huntley) | The bare autonomous-loop *technique* — a fresh agent each iteration against a PRD, with tests/lints as "backpressure." | `/ss-ralph` **wraps that engine** in named stages, a ledger, and durable context — Ralph is the engine, SuperStack the instrumented track. |
 
-SuperStack's bet: a *coherent, verifiable* process beats a pile of clever-but-unaccountable commands.
+**SuperStack's specific bet:** a *coherent, verifiable, self-improving* loop — proof the process actually ran (ledger + `/ss-audit`), memory that survives sessions, and a framework that sharpens itself from your usage (`/ss-evolve`). If one of the above fits your need better, use it — they're built to coexist.
 
 ---
 
@@ -146,7 +142,7 @@ Then run `/ss-init` once in your project to set up `.superstack/`, and `/ss-fram
 | `/ss-evolve` | Learn from your ledger; auto-apply low-risk fixes, draft new skills for review. Now supports `--since <window>` (time-windowed detection) and `--explore` (deterministic draft-skill proposals into `.superstack/proposals/`, never auto-committed). |
 | `/ss-ralph` | Run the loop unattended until a PRD is fully done |
 
-**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` `/ss-doctor` `/ss-drift` `/ss-stats` `/ss-trace` `/ss-context` `/ss-ctx` — run `/ss-help` for the full index (**30 skills, 4 review agents, 2 hooks, 1 MCP server**).
+**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` `/ss-doctor` `/ss-drift` `/ss-stats` `/ss-trace` `/ss-context` `/ss-ctx` — run `/ss-help` for the full index (**30 skills, 4 subagents, 2 hooks, 1 MCP server**).
 
 ---
 

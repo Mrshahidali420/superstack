@@ -138,6 +138,10 @@ async function handle(line) {
   }
 }
 
+// Never crash: log to stderr (NOT stdout - that is the JSON-RPC channel) and keep running.
+process.on('uncaughtException', (e) => { try { process.stderr.write('ss-ctx: ' + String(e?.stack || e) + '\n'); } catch {} });
+process.on('unhandledRejection', (e) => { try { process.stderr.write('ss-ctx: ' + String(e) + '\n'); } catch {} });
+
 let buf = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => {
@@ -145,6 +149,6 @@ process.stdin.on('data', (chunk) => {
   let nl;
   while ((nl = buf.indexOf('\n')) >= 0) {
     const line = buf.slice(0, nl); buf = buf.slice(nl + 1);
-    if (line.trim()) handle(line);
+    if (line.trim()) handle(line).catch(() => {});   // a handler rejection must never crash the server
   }
 });

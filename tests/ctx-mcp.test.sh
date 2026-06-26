@@ -62,6 +62,14 @@ else
   # unknown tool -> isError
   U="$(drive '{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"nope","arguments":{}}}')"
   chk "unknown tool isError" '[ "$(rid "$U" 13 | jq -r ".result.isError")" = "true" ]'
+
+  # unknown METHOD (with id) -> JSON-RPC error -32601
+  M="$(drive '{"jsonrpc":"2.0","id":14,"method":"bogus/method"}')"
+  chk "unknown method -32601" '[ "$(rid "$M" 14 | jq -r ".error.code")" = "-32601" ]'
+
+  # a notification (no id) and an unknown notification produce NO response (only the init reply)
+  N="$(drive '{"jsonrpc":"2.0","method":"notifications/initialized"}' '{"jsonrpc":"2.0","method":"notifications/whatever"}')"
+  chk "notifications no output" '[ "$(printf "%s\n" "$N" | grep -c .)" -eq 1 ]'
 fi
 
 echo

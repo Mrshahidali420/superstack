@@ -48,6 +48,7 @@ else
   H="$(drive '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"munch_search","arguments":{"name":"alpha","path":"tests/fixtures/munch"}}}')"
   chk "search finds js"  'printf "%s" "$(txt "$H" 8)" | grep -qE "calc.js:[0-9]+  function  alpha"'
   chk "search finds py"  'printf "%s" "$(txt "$H" 8)" | grep -qE "util.py:[0-9]+  function  alpha"'
+  chk "search finds rs"  'printf "%s" "$(txt "$H" 8)" | grep -qE "lib.rs:[0-9]+  function  alpha"'
 
   # --- error paths ---
   E="$(drive '{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"munch_outline","arguments":{"file":"tests/fixtures/munch/README.txt"}}}' '{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"munch_symbol","arguments":{"file":"tests/fixtures/munch/calc.js","name":"nope"}}}')"

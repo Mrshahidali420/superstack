@@ -48,7 +48,7 @@ rpf=0; for d2 in "$dir/replays" "$dir/proposals"; do [ -d "$d2" ] && rpf=$((rpf 
 rt_det="not detected"; rt_hint="front 2 (ss-ctx) or install context-mode"
 if [ -f scripts/ss-ctx ]; then rt_det="detected"; rt_hint="ss-ctx (native)"; elif grep -qs 'context-mode' .mcp.json "$HOME/.claude.json" 2>/dev/null; then rt_det="detected"; rt_hint="context-mode (mcp)"; fi
 cx_det="not detected"; cx_hint="front 3 (ss-munch) or install jcodemunch"
-if [ -f scripts/ss-munch ]; then cx_det="detected"; cx_hint="ss-munch (native)"; elif grep -qs 'jcodemunch' .mcp.json "$HOME/.claude.json" 2>/dev/null; then cx_det="detected"; cx_hint="jcodemunch (mcp)"; fi
+if grep -qs '"ss-munch"' .mcp.json 2>/dev/null; then cx_det="detected"; cx_hint="ss-munch (native)"; elif grep -qs 'jcodemunch' .mcp.json "$HOME/.claude.json" 2>/dev/null; then cx_det="detected"; cx_hint="jcodemunch (mcp)"; fi
 
 if [ "$check" = "1" ]; then
   if [ "$pct" -ge 60 ]; then

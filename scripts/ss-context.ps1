@@ -49,8 +49,13 @@ function Detect($nativeScript, $cfgName) {
 }
 $rt = Detect 'scripts/ss-ctx' 'context-mode'
 $rtDet = if ($rt[0]) { 'detected' } else { 'not detected' }; $rtHint = if ($rt[1]) { $rt[1] } else { 'front 2 (ss-ctx) or install context-mode' }
-$cx = Detect 'scripts/ss-munch' 'jcodemunch'
-$cxDet = if ($cx[0]) { 'detected' } else { 'not detected' }; $cxHint = if ($cx[1]) { $cx[1] } else { 'front 3 (ss-munch) or install jcodemunch' }
+$cxDet = 'not detected'; $cxHint = 'front 3 (ss-munch) or install jcodemunch'
+if ((Test-Path -LiteralPath '.mcp.json' -PathType Leaf) -and (Select-String -LiteralPath '.mcp.json' -SimpleMatch '"ss-munch"' -CaseSensitive -Quiet)) {
+  $cxDet = 'detected'; $cxHint = 'ss-munch (native)'
+} else {
+  $jc = Detect 'scripts/ss-munch' 'jcodemunch'
+  if ($jc[0]) { $cxDet = 'detected'; $cxHint = $jc[1] }
+}
 
 if ($Check) {
   if ($pct -ge 60) {

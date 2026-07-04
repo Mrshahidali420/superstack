@@ -3,6 +3,10 @@
     "ss-ctx": {
       "command": "node",
       "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/server.mjs"]
+    },
+    "ss-munch": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/munch/server.mjs"]
     }
   }
 }

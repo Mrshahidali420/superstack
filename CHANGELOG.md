@@ -6,6 +6,8 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-10
+
 ### Added
 - **ss-munch** (Front 3) — symbol-level code retrieval: a second, parser-vendored MCP server
   (`munch_outline`, `munch_symbol`, `munch_search`) that returns one code symbol or a compact file
@@ -115,7 +117,8 @@ All notable changes to SuperStack are documented here. The format follows
 - Cross-platform installers and Claude Code plugin + marketplace manifests.
 - Skill-frontmatter linter (`scripts/lint-skills.sh`), self-test, and CI.
 
-[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/Mrshahidali420/superstack/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Mrshahidali420/superstack/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/Mrshahidali420/superstack/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Mrshahidali420/superstack/compare/v0.4.0...v0.5.0

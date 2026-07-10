@@ -1,8 +1,9 @@
 #!/usr/bin/env pwsh
 # SPDX-License-Identifier: MIT
-# Bootstrap a project's SuperStack runtime (config, gitignore, genesis ledger entry). Idempotent.
-# Usage: ss-init.ps1 [-Force] [-DryRun]
-param([switch]$Force, [switch]$DryRun)
+# Bootstrap a project's SuperStack runtime (config, gitignore, genesis ledger entry,
+# context-routing doctrine). Idempotent.
+# Usage: ss-init.ps1 [-Force] [-DryRun] [-NoRouting]
+param([switch]$Force, [switch]$DryRun, [switch]$NoRouting)
 $ErrorActionPreference = 'Stop'
 $dir = if ($env:SUPERSTACK_DIR) { $env:SUPERSTACK_DIR } else { '.superstack' }
 if ($dir -match '^/[a-zA-Z]/') { try { $dir = (& cygpath -w $dir 2>$null).Trim() } catch {} }
@@ -54,12 +55,51 @@ if (-not (Test-Path $ledger)) {
   }
 } else { $lg = 'already present' }
 
+# routing doctrine - single source: templates/context-routing.md, installed into
+# ./CLAUDE.md between markers. LF-only writes via [IO.File] (byte-parity with bash);
+# paths anchored to Get-Location because .NET does not track the pwsh location.
+$tpl = Join-Path $PSScriptRoot '..' 'templates' 'context-routing.md'
+$claude = Join-Path (Get-Location).Path 'CLAUDE.md'
+$m1 = '<!-- superstack:context-routing -->'
+$m2 = '<!-- /superstack:context-routing -->'
+if ($NoRouting) { $rt = 'skipped (--no-routing)' }
+elseif (-not (Test-Path -LiteralPath $tpl -PathType Leaf)) { $rt = 'skipped (template missing)' }
+else {
+  $block = ([IO.File]::ReadAllText($tpl) -replace "`r`n", "`n").TrimEnd("`n")
+  $raw = $null; $cur = $null; $i1 = -1; $i2 = -1
+  if (Test-Path -LiteralPath $claude -PathType Leaf) {
+    $raw = [IO.File]::ReadAllText($claude)
+    $i1 = $raw.IndexOf($m1, [StringComparison]::Ordinal)
+    if ($i1 -ge 0) {
+      $i2 = $raw.IndexOf($m2, [StringComparison]::Ordinal)
+      if ($i2 -gt $i1) { $cur = $raw.Substring($i1, $i2 + $m2.Length - $i1) }
+    }
+  }
+  $curLf = if ($null -ne $cur) { $cur -replace "`r`n", "`n" } else { $null }
+  if ($curLf -ceq $block) { $rt = 'already current' }
+  elseif ($DryRun) { $rt = '[dry-run] would install the routing block into CLAUDE.md' }
+  elseif ($null -ne $cur) {
+    [IO.File]::WriteAllText($claude, ($raw.Substring(0, $i1) + $block + $raw.Substring($i2 + $m2.Length)))
+    $rt = 'updated (CLAUDE.md)'; $wrote = $true
+  }
+  elseif ($null -ne $raw -and $raw.Length -gt 0) {
+    $sep = if ($raw.EndsWith("`n")) { "`n" } else { "`n`n" }
+    [IO.File]::WriteAllText($claude, ($raw + $sep + $block + "`n"))
+    $rt = 'installed (CLAUDE.md)'; $wrote = $true
+  }
+  else {
+    [IO.File]::WriteAllText($claude, ($block + "`n"))
+    $rt = 'installed (CLAUDE.md)'; $wrote = $true
+  }
+}
+
 # report
 $lines = @(
   'ss-init: SuperStack project setup (.superstack/)'
   ('  {0,-10} {1}' -f 'config:', $cfg)
   ('  {0,-10} {1}' -f 'gitignore:', $gi)
   ('  {0,-10} {1}' -f 'ledger:', $lg)
+  ('  {0,-10} {1}' -f 'routing:', $rt)
 )
 if ($DryRun) { $lines += '[dry-run] no changes written.' }
 elseif ($wrote) { $lines += 'ready - run /ss-frame to start the loop (see CLAUDE.md).' }

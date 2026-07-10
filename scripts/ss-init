@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
-# Bootstrap a project's SuperStack runtime (config, gitignore, genesis ledger entry). Idempotent.
-# Usage: ss-init [--force] [--dry-run]
+# Bootstrap a project's SuperStack runtime (config, gitignore, genesis ledger entry,
+# context-routing doctrine). Idempotent.
+# Usage: ss-init [--force] [--dry-run] [--no-routing]
 set -uo pipefail
 dir="${SUPERSTACK_DIR:-.superstack}"
 config="$dir/config"; ledger="$dir/ledger.jsonl"
-force=0; dry=0
+force=0; dry=0; noroute=0
 for a in "$@"; do
   case "$a" in
     --force) force=1;;
     --dry-run) dry=1;;
-    *) echo "ss-init: unknown flag '$a' (usage: ss-init [--force] [--dry-run])" >&2; exit 1;;
+    --no-routing) noroute=1;;
+    *) echo "ss-init: unknown flag '$a' (usage: ss-init [--force] [--dry-run] [--no-routing])" >&2; exit 1;;
   esac
 done
 
@@ -60,11 +62,40 @@ else
   lg="already present"
 fi
 
+# routing doctrine ---------------------------------------------------
+# Single source: templates/context-routing.md. Installed into ./CLAUDE.md between
+# markers; re-run replaces the block (upgrade path), never touches text outside it.
+tpl="$(cd "$(dirname "$0")" && pwd)/../templates/context-routing.md"
+m1='<!-- superstack:context-routing -->'
+m2='<!-- /superstack:context-routing -->'
+if [ "$noroute" -eq 1 ]; then rt="skipped (--no-routing)"
+elif [ ! -f "$tpl" ]; then rt="skipped (template missing)"
+else
+  block="$(cat "$tpl")"
+  cur=""
+  if [ -f CLAUDE.md ] && grep -qF -- "$m1" CLAUDE.md; then
+    cur="$(awk -v m1="$m1" -v m2="$m2" 'index($0,m1){f=1} f{sub(/\r$/,""); print} index($0,m2){f=0}' CLAUDE.md)"
+  fi
+  if [ "$cur" = "$block" ]; then rt="already current"
+  elif [ "$dry" -eq 1 ]; then rt="[dry-run] would install the routing block into CLAUDE.md"
+  elif [ -n "$cur" ]; then
+    awk -v m1="$m1" -v m2="$m2" -v blk="$block" 'index($0,m1){b=1; print blk; next} index($0,m2){b=0; next} !b{print}' CLAUDE.md > CLAUDE.md.ssnew && mv CLAUDE.md.ssnew CLAUDE.md
+    rt="updated (CLAUDE.md)"; wrote=1
+  elif [ -s CLAUDE.md ]; then
+    { [ -n "$(tail -c1 CLAUDE.md)" ] && printf '\n'; printf '\n%s\n' "$block"; } >> CLAUDE.md
+    rt="installed (CLAUDE.md)"; wrote=1
+  else
+    printf '%s\n' "$block" > CLAUDE.md
+    rt="installed (CLAUDE.md)"; wrote=1
+  fi
+fi
+
 # report -------------------------------------------------------------
 printf 'ss-init: SuperStack project setup (.superstack/)\n'
 printf '  %-10s %s\n' "config:" "$cfg"
 printf '  %-10s %s\n' "gitignore:" "$gi"
 printf '  %-10s %s\n' "ledger:" "$lg"
+printf '  %-10s %s\n' "routing:" "$rt"
 if [ "$dry" -eq 1 ]; then printf '%s\n' "[dry-run] no changes written."
 elif [ "$wrote" -eq 1 ]; then printf '%s\n' "ready - run /ss-frame to start the loop (see CLAUDE.md)."
 else printf '%s\n' "already initialized."

@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Unified read-only dashboard over the Loop Ledger: report + replay + trace in one view.
+# A thin composer - the change is resolved once, then the sibling legs run verbatim.
+# Usage: ss-panel [change] [--save]   Exit: 0 ok, 1 usage/no ledger, 2 missing jq.
+set -uo pipefail
+export LC_ALL=C
+dir="${SUPERSTACK_DIR:-.superstack}"
+ledger="$dir/ledger.jsonl"
+sib="$(cd "$(dirname "$0")" && pwd)"
+command -v jq >/dev/null 2>&1 || { echo "ss-panel: jq is required" >&2; exit 2; }
+
+save=0; change=""
+for a in "$@"; do
+  case "$a" in
+    --save) save=1;;
+    -*) echo "ss-panel: unknown flag '$a' (usage: ss-panel [change] [--save])" >&2; exit 1;;
+    *) change="$a";;
+  esac
+done
+[ -s "$ledger" ] || { echo "ss-panel: no ledger at $ledger (run /ss-init)" >&2; exit 1; }
+[ -n "$change" ] || change="$(jq -rn '[inputs][-1].change // empty' < "$ledger" | tr -d '\r')"
+[ -n "$change" ] || { echo "ss-panel: could not resolve a change from the ledger" >&2; exit 1; }
+
+leg() {
+  local o rc
+  o="$(bash "$sib/$1" "$change" 2>/dev/null)"; rc=$?
+  if [ "$rc" -eq 0 ]; then printf '%s\n' "$o"; else printf '  (%s unavailable - exit %d)\n' "$1" "$rc"; fi
+}
+
+SEP="$(printf -- '-%.0s' {1..54})"
+output="$(
+  printf 'ss-panel: %s - report + replay + trace\n%s\n' "$change" "$SEP"
+  leg ss-report
+  printf '%s\n' "$SEP"
+  leg ss-replay
+  printf '%s\n' "$SEP"
+  leg ss-trace
+)"
+printf '%s\n' "$output"
+
+if [ "$save" -eq 1 ]; then
+  mkdir -p "$dir/replays"
+  { printf '```\n'; printf '%s\n' "$output"; printf '```\n'; } > "$dir/replays/panel-${change//\//-}.md"
+  echo "saved -> .superstack/replays/panel-${change//\//-}.md" >&2
+fi
+exit 0

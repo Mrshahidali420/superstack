@@ -6,6 +6,13 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **Context routing doctrine** (Front 4 — the context all-rounder is complete) — `/ss-init` now
+  installs a compact, marker-delimited routing block into the project's `CLAUDE.md` (single source:
+  `templates/context-routing.md`; re-run replaces the block in place; `--no-routing` opts out),
+  steering the agent to `munch_*` over `Read`/`Grep` and `ctx_*` over raw Bash. The `/ss-context`
+  cockpit gains a third stack row: `routing doctrine  detected/not detected`.
+
 ## [0.8.0] - 2026-07-10
 
 ### Added

@@ -7,7 +7,7 @@ description: Use to keep your standing (always-loaded) context lean - /ss-contex
 
 `/ss-context` watches the **standing context** - the always-loaded files that are never evicted from
 the window (CLAUDE.md especially). It estimates their token footprint (bytes/4) against a budget,
-flags bloat, and detects the other two context fronts (runtime sandbox, code exploration). It is
+flags bloat, and detects the other context fronts (runtime sandbox, code exploration, routing doctrine). It is
 read-only - it recommends, it never deletes. It also runs **automatically** in the SessionStart hook,
 emitting a one-line advisory only when you are over budget.
 
@@ -16,7 +16,8 @@ emitting a one-line advisory only when you are over budget.
 1. It runs on its own at session start; to inspect on demand run `scripts/ss-context`
    (PowerShell: `scripts/ss-context.ps1`). `--budget N` sets the token budget (default 8000).
 2. Read the budget line: `OK` (<60%), `WARN` (60-100%), `OVER` (>100%, exits 1 for CI).
-3. Read the `context stack` rows - is the runtime sandbox + code exploration wired?
+3. Read the `context stack` rows - are the runtime sandbox, code exploration, and routing doctrine
+   wired? A missing routing row means [[ss-init]] has not installed the block into CLAUDE.md yet.
 4. Act on the flags / the advisory (below).
 
 ## Note - the autopilot playbook
@@ -30,7 +31,8 @@ force):
   [[ss-learn]]; archive a huge ledger.
 - **Routing doctrine:** prefer the runtime sandbox (Front 2 `ss-ctx`, or context-mode) for verbose tool
   output, and the code-exploration tool (Front 3 `ss-munch`, or jcodemunch) over brute-reading files;
-  fall back to Read/Grep when neither is present.
+  fall back to Read/Grep when neither is present. [[ss-init]] installs this doctrine into the project's
+  CLAUDE.md as a marker-delimited block (Front 4), so it stands in every session.
 - **Right-size (Plan):** keep each planned task within one context window; split before starting if not.
 
 ## Lineage

@@ -154,6 +154,7 @@ The latest additions (full detail in the [Changelog](CHANGELOG.md)):
   - **`/ss-context`** — a standing-context budget cockpit. It measures your always-loaded footprint (CLAUDE.md, skill descriptions, `STATE.md` / `CONTEXT.md`) against a budget and warns you *before* you blow it — automatically, at session start.
   - **`ss-ctx` runtime-output sandbox** — a `PostToolUse` hook that transparently shrinks oversized command output (saving the full text to a retrievable store), **plus** a dependency-free MCP server exposing `ctx_execute` / `ctx_batch_execute` / `ctx_search` / `ctx_show` / `ctx_fetch_and_index`, so verbose command runs and fetched pages never flood the context window.
   - **`ss-munch` code-retrieval sandbox** — a second, parser-vendored MCP server (vendored tree-sitter WASM, zero-install) exposing `munch_outline` / `munch_symbol` / `munch_search`, so the agent reads one symbol or a compact file outline instead of the whole file. Front 3 of the context all-rounder.
+  - **Context routing doctrine** — `/ss-init` installs a compact, marker-delimited routing block into the project's `CLAUDE.md`, steering the agent to the sandbox tools by default (`--no-routing` opts out; re-run upgrades it in place). The cockpit reports it as a third stack row. Front 4 — the all-rounder is complete.
 - **Cross-run insight** — **`/ss-stats`** (DORA-style analytics across runs: gate-fail rate, skips, trend) and **`/ss-trace`** (a change's full provenance — spec → ledger → commits — in one chronological lineage).
 - **Earlier** — **`/ss-drift`** (file-drift detection), **`/ss-doctor`** (health checks), **`/ss-init`** (project setup), **`/ss-replay`** (run timelines).
 
@@ -167,10 +168,9 @@ SuperStack is built with its own loop — every feature is framed, planned, revi
 - The eight-phase gated loop + Loop Ledger + `/ss-audit` proof-of-process.
 - Self-evolution (`/ss-evolve`) and unattended autonomy (`/ss-ralph`).
 - Insight & provenance: `/ss-report`, `/ss-replay`, `/ss-stats`, `/ss-trace`.
-- The context all-rounder, **Fronts 1–3**: the `/ss-context` cockpit, the `ss-ctx` runtime-output sandbox (hook + MCP server), and `ss-munch` symbol-level code retrieval (a second, parser-vendored MCP server).
+- The context all-rounder, **complete (Fronts 1–4)**: the `/ss-context` cockpit, the `ss-ctx` runtime-output sandbox (hook + MCP server), `ss-munch` symbol-level code retrieval (a second, parser-vendored MCP server), and the `/ss-init`-installed routing doctrine that wires them into the loop — this repo's own `CLAUDE.md` carries the block.
 
 **Next**
-- **Front 4 — integration:** a routing doctrine that wires the context tools into the loop, with the cockpit reporting the whole stack.
 - **`/ss-panel`:** a unified dashboard over the ledger (report + replay + trace in one view).
 
 Direction: go deeper on the two things that make long, autonomous agent work trustworthy — *verifiable process* and *context engineering*. Ideas and PRs welcome.

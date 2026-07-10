@@ -1,6 +1,6 @@
 # Front 4 — context all-rounder integration — Design
 
-Status: DRAFT (awaiting sign-off)
+Status: APPROVED 2026-07-10 (install mode: /ss-init default-on with `--no-routing` opt-out)
 
 ## Problem
 
@@ -45,9 +45,17 @@ Advisory, not enforced: no PreToolUse blocking (deferred; see Out of scope).
 
 ### 2. `/ss-init` installs it (bash + ps1 twins)
 
-- On run, if `.mcp.json` registers `ss-ctx` or `ss-munch`: append the block to the
-  project's `CLAUDE.md` (create the file if absent), or **replace between markers** if
-  already present (idempotent re-run, upgrades doctrine text on /ss-init after update).
+- **Single source:** the block lives once in `templates/context-routing.md`; both init
+  twins read it (no drifting copies in two scripts + CLAUDE.md). The repo's own
+  CLAUDE.md gets the block by running `/ss-init` on the repo (dogfood), not by hand.
+- On run: append the block to the project's `CLAUDE.md` (create the file if absent),
+  or **replace between markers** if already present (idempotent re-run; upgrades the
+  doctrine text after a plugin update).
+- **Build amendment (gating):** the draft gated the install on `ss-ctx`/`ss-munch`
+  appearing in the *project's* `.mcp.json` — but in real installs the servers ship via
+  the *plugin's* manifest and never appear there, which would make default-on a
+  permanent no-op. The gate is `--no-routing` only; the doctrine's final
+  "fall back if not connected" line covers absent servers.
 - `--no-routing` opts out; removal = delete between markers (documented, not a flag).
 - No writes outside the project dir; never touches `~/.claude/CLAUDE.md`.
 
@@ -63,7 +71,8 @@ Detection: literal case-sensitive match of `<!-- superstack:context-routing -->`
 
 ## Components / files
 
-- Modify: `CLAUDE.md` (canonical doctrine into Context Engineering section)
+- Create: `templates/context-routing.md` (the single-source doctrine block)
+- Modify: `CLAUDE.md` (block installed by running /ss-init on the repo — dogfood)
 - Modify: `skills/init/SKILL.md`, `scripts/ss-init`, `scripts/ss-init.ps1` (install step)
 - Modify: `scripts/ss-context`, `scripts/ss-context.ps1` (row 3)
 - Modify: `tests/init.test.sh` (append / idempotent-replace / no-CLAUDE.md / opt-out)

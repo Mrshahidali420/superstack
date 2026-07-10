@@ -6,6 +6,8 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-10
+
 ### Added
 - **Context routing doctrine** (Front 4 — the context all-rounder is complete) — `/ss-init` now
   installs a compact, marker-delimited routing block into the project's `CLAUDE.md` (single source:
@@ -124,7 +126,8 @@ All notable changes to SuperStack are documented here. The format follows
 - Cross-platform installers and Claude Code plugin + marketplace manifests.
 - Skill-frontmatter linter (`scripts/lint-skills.sh`), self-test, and CI.
 
-[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/Mrshahidali420/superstack/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/Mrshahidali420/superstack/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Mrshahidali420/superstack/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/Mrshahidali420/superstack/compare/v0.5.0...v0.6.0

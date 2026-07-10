@@ -1,6 +1,6 @@
 {
   "name": "superstack",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "One disciplined, verifiable loop for coding agents: Frame -> Plan -> Build (TDD) -> Review -> QA -> Secure -> Ship -> Learn. A proof-of-process ledger, self-evolving skills, an optional autonomous Ralph driver, and Karpathy's anti-mistake guidelines baked in.",
   "author": {
     "name": "Mrshahidali420",

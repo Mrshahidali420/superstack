@@ -6,6 +6,13 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **ss-munch** (Front 3) — symbol-level code retrieval: a second, parser-vendored MCP server
+  (`munch_outline`, `munch_symbol`, `munch_search`) that returns one code symbol or a compact file
+  outline instead of a whole file, parsed from a real tree-sitter AST (vendored web-tree-sitter 0.20.8 +
+  Core 7 grammars, zero-install). Read-only. The `/ss-context` cockpit now reports
+  `code exploration: detected (native)`.
+
 ## [0.7.0] - 2026-06-26
 
 ### Added

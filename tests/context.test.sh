@@ -49,13 +49,17 @@ chk "check silent" '[ -z "$(run "$D" --check)" ]'
 adv_out="$(run "$D" --check --budget 1000)"
 chk "check advisory" 'printf "%s" "$adv_out" | grep -qE "^\[ss-context\] standing context ~2463 tok = 246% of 1000 budget - review /ss-context \(run /ss-context\)$"'
 
-# detection: cwd .mcp.json (mcp) and native stubs
+# detection: cwd .mcp.json (context-mode -> mcp; registered ss-munch -> native)
 Dm="$(mkfix)"; printf '{"mcpServers":{"context-mode":{}}}\n' > "$Dm/.mcp.json"
 dm_out="$(run "$Dm")"
 chk "detect mcp"   'printf "%s" "$dm_out" | grep -qE "^  runtime sandbox +detected +context-mode \(mcp\)$"'
-Dn="$(mkfix)"; mkdir -p "$Dn/scripts"; : > "$Dn/scripts/ss-munch"
+Dn="$(mkfix)"; printf '{"mcpServers":{"ss-munch":{}}}\n' > "$Dn/.mcp.json"
 dn_out="$(run "$Dn")"
 chk "detect native" 'printf "%s" "$dn_out" | grep -qE "^  code exploration +detected +ss-munch \(native\)$"'
+# a stray scripts/ss-munch file is NOT the capability - only the registered server counts
+Ds="$(mkfix)"; mkdir -p "$Ds/scripts"; : > "$Ds/scripts/ss-munch"
+ds_out="$(run "$Ds")"
+chk "stray munch script ignored" 'printf "%s" "$ds_out" | grep -qE "^  code exploration +not detected "'
 
 # flags: oversized CLAUDE.md + >1000-line ledger
 Df="$(mkfix)"; head -c 20000 /dev/zero | tr '\0' x > "$Df/CLAUDE.md"; yes '{"ts":"t"}' 2>/dev/null | head -1001 > "$Df/.superstack/ledger.jsonl"
@@ -71,7 +75,7 @@ if command -v pwsh >/dev/null 2>&1; then
   if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-context.ps1")"; else ps1arg="$ROOT/scripts/ss-context.ps1"; fi
   Dp="$(mkfix)"; Dp2="$(mkfix)"; printf '{"mcpServers":{"context-mode":{}}}\n' > "$Dp2/.mcp.json"
   # full report parity (default budget; detection none) and (with mcp detection)
-  for fx in "$Dp" "$Dp2"; do
+  for fx in "$Dp" "$Dp2" "$Dn" "$Ds"; do
     pb="$(cd "$fx" && HOME="$HOMEDIR" SUPERSTACK_DIR="$fx/.superstack" bash "$ROOT/scripts/ss-context")"
     pp="$(cd "$fx" && HOME="$HOMEDIR" SUPERSTACK_DIR="$fx/.superstack" pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
     chk "ps1 parity report [$fx]" '[ "$pb" = "$pp" ]'

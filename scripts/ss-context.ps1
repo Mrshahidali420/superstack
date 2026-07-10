@@ -53,8 +53,10 @@ $cxDet = 'not detected'; $cxHint = 'front 3 (ss-munch) or install jcodemunch'
 if ((Test-Path -LiteralPath '.mcp.json' -PathType Leaf) -and (Select-String -LiteralPath '.mcp.json' -SimpleMatch '"ss-munch"' -CaseSensitive -Quiet)) {
   $cxDet = 'detected'; $cxHint = 'ss-munch (native)'
 } else {
-  $jc = Detect 'scripts/ss-munch' 'jcodemunch'
-  if ($jc[0]) { $cxDet = 'detected'; $cxHint = $jc[1] }
+  # config-grep only - a stray scripts/ss-munch file must NOT count (parity with bash twin)
+  foreach ($c in @('.mcp.json', (Join-Path $homeDir '.claude.json'))) {
+    if ((Test-Path -LiteralPath $c -PathType Leaf) -and (Select-String -LiteralPath $c -SimpleMatch 'jcodemunch' -CaseSensitive -Quiet)) { $cxDet = 'detected'; $cxHint = 'jcodemunch (mcp)'; break }
+  }
 }
 
 if ($Check) {

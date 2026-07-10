@@ -6,6 +6,13 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **`/ss-panel`** — the unified ledger dashboard promised on the roadmap: report + replay +
+  trace for one run in a single view, as a thin composer (the change is resolved once and the
+  existing legs run verbatim, so all three views agree). `--save` writes a fenced markdown
+  panel to `.superstack/replays/panel-<change>.md`. bash + PowerShell twins, byte-parity
+  tested; 18th suite in `tests/run.sh`. (32 skills.)
+
 ## [0.9.0] - 2026-07-10
 
 ### Added

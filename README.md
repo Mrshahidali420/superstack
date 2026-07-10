@@ -6,7 +6,7 @@
 
 Frame → Plan → Build → Review → QA → Secure → Ship → Learn
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.9.0](https://img.shields.io/badge/release-v0.9.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 31](https://img.shields.io/badge/skills-31-7c3aed.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.9.0](https://img.shields.io/badge/release-v0.9.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 32](https://img.shields.io/badge/skills-32-7c3aed.svg)
 
 Built for Claude Code; portable to any skill-aware agent.
 
@@ -142,7 +142,7 @@ Then run `/ss-init` once in your project to set up `.superstack/`, and `/ss-fram
 | `/ss-evolve` | Learn from your ledger; auto-apply low-risk fixes, draft new skills for review. Now supports `--since <window>` (time-windowed detection) and `--explore` (deterministic draft-skill proposals into `.superstack/proposals/`, never auto-committed). |
 | `/ss-ralph` | Run the loop unattended until a PRD is fully done |
 
-**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` `/ss-doctor` `/ss-drift` `/ss-stats` `/ss-trace` `/ss-context` `/ss-ctx` `/ss-munch` — run `/ss-help` for the full index (**31 skills, 4 subagents, 2 hooks, 2 MCP servers**).
+**Supporting skills:** `/ss-debug` `/ss-guard` `/ss-respond` `/ss-worktree` `/ss-pause` `/ss-resume` `/ss-retro` `/ss-docs` `/ss-init` `/ss-doctor` `/ss-drift` `/ss-stats` `/ss-trace` `/ss-context` `/ss-ctx` `/ss-munch` `/ss-panel` — run `/ss-help` for the full index (**32 skills, 4 subagents, 2 hooks, 2 MCP servers**).
 
 ---
 
@@ -156,6 +156,7 @@ The latest additions (full detail in the [Changelog](CHANGELOG.md)):
   - **`ss-munch` code-retrieval sandbox** — a second, parser-vendored MCP server (vendored tree-sitter WASM, zero-install) exposing `munch_outline` / `munch_symbol` / `munch_search`, so the agent reads one symbol or a compact file outline instead of the whole file. Front 3 of the context all-rounder.
   - **Context routing doctrine** — `/ss-init` installs a compact, marker-delimited routing block into the project's `CLAUDE.md`, steering the agent to the sandbox tools by default (`--no-routing` opts out; re-run upgrades it in place). The cockpit reports it as a third stack row. Front 4 — the all-rounder is complete.
 - **Cross-run insight** — **`/ss-stats`** (DORA-style analytics across runs: gate-fail rate, skips, trend) and **`/ss-trace`** (a change's full provenance — spec → ledger → commits — in one chronological lineage).
+- **`/ss-panel`** — the unified dashboard: report + replay + trace for one run, composed in a single view (the change resolved once, so all three legs agree). `--save` writes a shareable markdown panel.
 - **Earlier** — **`/ss-drift`** (file-drift detection), **`/ss-doctor`** (health checks), **`/ss-init`** (project setup), **`/ss-replay`** (run timelines).
 
 ---
@@ -167,11 +168,11 @@ SuperStack is built with its own loop — every feature is framed, planned, revi
 **Shipped**
 - The eight-phase gated loop + Loop Ledger + `/ss-audit` proof-of-process.
 - Self-evolution (`/ss-evolve`) and unattended autonomy (`/ss-ralph`).
-- Insight & provenance: `/ss-report`, `/ss-replay`, `/ss-stats`, `/ss-trace`.
+- Insight & provenance: `/ss-report`, `/ss-replay`, `/ss-stats`, `/ss-trace`, `/ss-panel`.
 - The context all-rounder, **complete (Fronts 1–4)**: the `/ss-context` cockpit, the `ss-ctx` runtime-output sandbox (hook + MCP server), `ss-munch` symbol-level code retrieval (a second, parser-vendored MCP server), and the `/ss-init`-installed routing doctrine that wires them into the loop — this repo's own `CLAUDE.md` carries the block.
 
 **Next**
-- **`/ss-panel`:** a unified dashboard over the ledger (report + replay + trace in one view).
+- Nothing queued — candidates surface via `/ss-evolve --explore` proposals and issues.
 
 Direction: go deeper on the two things that make long, autonomous agent work trustworthy — *verifiable process* and *context engineering*. Ideas and PRs welcome.
 

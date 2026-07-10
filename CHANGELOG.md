@@ -6,6 +6,8 @@ All notable changes to SuperStack are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-07-10
+
 ### Added
 - **`/ss-panel`** — the unified ledger dashboard promised on the roadmap: report + replay +
   trace for one run in a single view, as a thin composer (the change is resolved once and the
@@ -133,7 +135,8 @@ All notable changes to SuperStack are documented here. The format follows
 - Cross-platform installers and Claude Code plugin + marketplace manifests.
 - Skill-frontmatter linter (`scripts/lint-skills.sh`), self-test, and CI.
 
-[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/Mrshahidali420/superstack/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/Mrshahidali420/superstack/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/Mrshahidali420/superstack/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/Mrshahidali420/superstack/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Mrshahidali420/superstack/compare/v0.6.0...v0.7.0

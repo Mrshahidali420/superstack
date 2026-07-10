@@ -6,7 +6,7 @@
 
 Frame → Plan → Build → Review → QA → Secure → Ship → Learn
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.9.0](https://img.shields.io/badge/release-v0.9.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 32](https://img.shields.io/badge/skills-32-7c3aed.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-7c3aed.svg)](https://github.com/Mrshahidali420/superstack) [![status v0.10.0](https://img.shields.io/badge/release-v0.10.0-brightgreen.svg)](https://github.com/Mrshahidali420/superstack/releases) ![skills 32](https://img.shields.io/badge/skills-32-7c3aed.svg)
 
 Built for Claude Code; portable to any skill-aware agent.
 

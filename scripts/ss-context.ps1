@@ -58,6 +58,10 @@ if ((Test-Path -LiteralPath '.mcp.json' -PathType Leaf) -and (Select-String -Lit
     if ((Test-Path -LiteralPath $c -PathType Leaf) -and (Select-String -LiteralPath $c -SimpleMatch 'jcodemunch' -CaseSensitive -Quiet)) { $cxDet = 'detected'; $cxHint = 'jcodemunch (mcp)'; break }
   }
 }
+$rdDet = 'not detected'; $rdHint = 'run /ss-init to install the routing block'
+if ((Test-Path -LiteralPath 'CLAUDE.md' -PathType Leaf) -and (Select-String -LiteralPath 'CLAUDE.md' -SimpleMatch '<!-- superstack:context-routing -->' -CaseSensitive -Quiet)) {
+  $rdDet = 'detected'; $rdHint = 'CLAUDE.md (superstack:context-routing)'
+}
 
 if ($Check) {
   if ($pct -ge 60) {
@@ -78,6 +82,7 @@ $out.Add($SEP)
 $out.Add('context stack:')
 $out.Add(('  {0,-18} {1,-13} {2}' -f 'runtime sandbox', $rtDet, $rtHint))
 $out.Add(('  {0,-18} {1,-13} {2}' -f 'code exploration', $cxDet, $cxHint))
+$out.Add(('  {0,-18} {1,-13} {2}' -f 'routing doctrine', $rdDet, $rdHint))
 $out.Add($SEP)
 $out.Add('flags:')
 if ($flags.Count -gt 0) { foreach ($fl in $flags) { $out.Add($fl) } } else { $out.Add('  (none)') }

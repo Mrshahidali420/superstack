@@ -49,6 +49,8 @@ rt_det="not detected"; rt_hint="front 2 (ss-ctx) or install context-mode"
 if [ -f scripts/ss-ctx ]; then rt_det="detected"; rt_hint="ss-ctx (native)"; elif grep -qs 'context-mode' .mcp.json "$HOME/.claude.json" 2>/dev/null; then rt_det="detected"; rt_hint="context-mode (mcp)"; fi
 cx_det="not detected"; cx_hint="front 3 (ss-munch) or install jcodemunch"
 if grep -qs '"ss-munch"' .mcp.json 2>/dev/null; then cx_det="detected"; cx_hint="ss-munch (native)"; elif grep -qs 'jcodemunch' .mcp.json "$HOME/.claude.json" 2>/dev/null; then cx_det="detected"; cx_hint="jcodemunch (mcp)"; fi
+rd_det="not detected"; rd_hint="run /ss-init to install the routing block"
+if grep -qsF -- '<!-- superstack:context-routing -->' CLAUDE.md 2>/dev/null; then rd_det="detected"; rd_hint="CLAUDE.md (superstack:context-routing)"; fi
 
 if [ "$check" = "1" ]; then
   if [ "$pct" -ge 60 ]; then
@@ -68,6 +70,7 @@ printf '%s\n' "$SEP"
 printf 'context stack:\n'
 printf '  %-18s %-13s %s\n' 'runtime sandbox' "$rt_det" "$rt_hint"
 printf '  %-18s %-13s %s\n' 'code exploration' "$cx_det" "$cx_hint"
+printf '  %-18s %-13s %s\n' 'routing doctrine' "$rd_det" "$rd_hint"
 printf '%s\n' "$SEP"
 printf 'flags:\n'
 if [ -n "$flags" ]; then printf '%s' "$flags"; else printf '  (none)\n'; fi

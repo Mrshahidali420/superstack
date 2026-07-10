@@ -60,6 +60,14 @@ chk "detect native" 'printf "%s" "$dn_out" | grep -qE "^  code exploration +dete
 Ds="$(mkfix)"; mkdir -p "$Ds/scripts"; : > "$Ds/scripts/ss-munch"
 ds_out="$(run "$Ds")"
 chk "stray munch script ignored" 'printf "%s" "$ds_out" | grep -qE "^  code exploration +not detected "'
+# routing doctrine row: marker in ./CLAUDE.md -> detected; absent/mixed-case -> not
+chk "routing not detected" 'printf "%s" "$out" | grep -qE "^  routing doctrine +not detected +run /ss-init to install the routing block$"'
+Dr="$(mkfix)"; printf '%s\n' '<!-- superstack:context-routing -->' >> "$Dr/CLAUDE.md"
+dr_out="$(run "$Dr")"
+chk "routing detected" 'printf "%s" "$dr_out" | grep -qE "^  routing doctrine +detected +CLAUDE.md \(superstack:context-routing\)$"'
+Drc="$(mkfix)"; printf '%s\n' '<!-- SUPERSTACK:CONTEXT-ROUTING -->' >> "$Drc/CLAUDE.md"
+drc_out="$(run "$Drc")"
+chk "routing mixed-case not detected" 'printf "%s" "$drc_out" | grep -qE "^  routing doctrine +not detected "'
 
 # flags: oversized CLAUDE.md + >1000-line ledger
 Df="$(mkfix)"; head -c 20000 /dev/zero | tr '\0' x > "$Df/CLAUDE.md"; yes '{"ts":"t"}' 2>/dev/null | head -1001 > "$Df/.superstack/ledger.jsonl"
@@ -75,7 +83,7 @@ if command -v pwsh >/dev/null 2>&1; then
   if command -v cygpath >/dev/null 2>&1; then ps1arg="$(cygpath -w "$ROOT/scripts/ss-context.ps1")"; else ps1arg="$ROOT/scripts/ss-context.ps1"; fi
   Dp="$(mkfix)"; Dp2="$(mkfix)"; printf '{"mcpServers":{"context-mode":{}}}\n' > "$Dp2/.mcp.json"
   # full report parity (default budget; detection none) and (with mcp detection)
-  for fx in "$Dp" "$Dp2" "$Dn" "$Ds"; do
+  for fx in "$Dp" "$Dp2" "$Dn" "$Ds" "$Dr" "$Drc"; do
     pb="$(cd "$fx" && HOME="$HOMEDIR" SUPERSTACK_DIR="$fx/.superstack" bash "$ROOT/scripts/ss-context")"
     pp="$(cd "$fx" && HOME="$HOMEDIR" SUPERSTACK_DIR="$fx/.superstack" pwsh -NoProfile -File "$ps1arg" | tr -d '\r')"
     chk "ps1 parity report [$fx]" '[ "$pb" = "$pp" ]'
